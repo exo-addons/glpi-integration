@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.exoplatform.addons.glpi-integration</groupId>
         <artifactId>glpi-integration</artifactId>
-        <version>1.0.x-SNAPSHOT</version>
+        <version>1.0.x-devx-SNAPSHOT</version>
     </parent>
     <artifactId>glpi-integration-api</artifactId>
     <name>Add-on:: GLPI Integration - Api</name>
