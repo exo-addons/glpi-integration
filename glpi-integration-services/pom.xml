@@ -29,15 +29,30 @@
     <name>Add-on:: GLPI Integration - Services</name>
     <description>GLPI Integration - Services</description>
     <properties>
-        <exo.test.coverage.ratio>0.0</exo.test.coverage.ratio>
+        <exo.test.coverage.ratio>0.5</exo.test.coverage.ratio>
     </properties>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>glpi-integration-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.exoplatform.commons</groupId>
+            <artifactId>commons-component-common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.social</groupId>
+            <artifactId>social-component-service</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.social</groupId>
+            <artifactId>social-component-service</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
     <build>
         <finalName>glpi-integration-services</finalName>
     </build>

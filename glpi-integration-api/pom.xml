@@ -27,6 +27,13 @@
     <artifactId>glpi-integration-api</artifactId>
     <name>Add-on:: GLPI Integration - Api</name>
     <description>GLPI Integration - Api</description>
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
     <build>
         <finalName>dlp-api</finalName>
     </build>
