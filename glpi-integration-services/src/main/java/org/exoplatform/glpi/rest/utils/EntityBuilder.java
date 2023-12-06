@@ -19,8 +19,12 @@ package org.exoplatform.glpi.rest.utils;
 
 import org.exoplatform.glpi.model.GLPISettings;
 import org.exoplatform.glpi.rest.model.GLPISettingsEntity;
+import org.exoplatform.glpi.rest.model.GLPISettingsResponseEntity;
+import org.exoplatform.services.security.Identity;
 
 public class EntityBuilder {
+
+  private static final String ADMINISTRATORS_GROUP = "/platform/administrators";
 
   private EntityBuilder() {
   }
@@ -32,5 +36,9 @@ public class EntityBuilder {
     return new GLPISettingsEntity(glpiSettings.getServerApiUrl(),
                                   glpiSettings.getAppToken(),
                                   glpiSettings.getMaxTicketsToDisplay());
+  }
+
+  public static Object toGLPISettingsResponseEntity(GLPISettings glpiSettings, Identity identity) {
+    return new GLPISettingsResponseEntity(toGLPISettingsEntity(glpiSettings), identity.isMemberOf(ADMINISTRATORS_GROUP));
   }
 }

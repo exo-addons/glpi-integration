@@ -38,7 +38,7 @@
         </dependency>
     </dependencies>
     <build>
-        <finalName>glpi-integration-webapps</finalName>
+        <finalName>glpi-integration</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
