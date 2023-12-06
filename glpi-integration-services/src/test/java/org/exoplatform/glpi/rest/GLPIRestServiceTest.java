@@ -20,29 +20,46 @@ package org.exoplatform.glpi.rest;
 import org.exoplatform.glpi.model.GLPISettings;
 import org.exoplatform.glpi.rest.model.GLPISettingsEntity;
 import org.exoplatform.glpi.service.GLPIService;
+import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.Identity;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class GLPIRestServiceTest {
 
   @Mock
-  private GLPIService     glpiService;
+  private GLPIService                                  glpiService;
 
-  private GLPIRestService glpiRestService;
+  private GLPIRestService                              glpiRestService;
+
+  private static final MockedStatic<ConversationState> CONVERSATION_STATE = mockStatic(ConversationState.class);
+
+  @Mock
+  private Identity                                     identity;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     glpiRestService = new GLPIRestService(glpiService);
+    ConversationState conversationState = mock(ConversationState.class);
+    CONVERSATION_STATE.when(ConversationState::getCurrent).thenReturn(conversationState);
+    CONVERSATION_STATE.when(conversationState::getIdentity).thenReturn(identity);
+  }
+
+  @AfterClass
+  public static void afterRunBare() {
+    CONVERSATION_STATE.close();
   }
 
   @Test
@@ -59,6 +76,7 @@ public class GLPIRestServiceTest {
 
   @Test
   public void getGLPISettings() {
+    when(identity.isMemberOf(anyString())).thenReturn(true);
     GLPISettings glpiSettings = new GLPISettings("url", "token", 10);
     when(glpiService.getGLPISettings()).thenReturn(null);
     Response response = glpiRestService.getGLPISettings();

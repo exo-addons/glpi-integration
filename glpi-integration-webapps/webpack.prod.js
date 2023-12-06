@@ -50,7 +50,9 @@ const config = {
         }),
         new VueLoaderPlugin()
     ],
-    entry: {},
+    entry: {
+        glpi: './src/main/webapp/vue-app/glpi/main.js',
+    },
     output: {
         path: path.join(__dirname, 'target/glpi-integration/'),
         filename: 'js/[name].bundle.js',
