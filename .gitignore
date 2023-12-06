@@ -9,6 +9,7 @@
 
 # Binaries
 *.7z
+*.7z
 *.dmg
 *.gz
 *.iso
