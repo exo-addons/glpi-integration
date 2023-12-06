@@ -38,6 +38,8 @@ import javax.ws.rs.core.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.Identity;
 
 @Path("/v1/glpi-integration")
 @Tag(name = "/v1/glpi-integration", description = "Manages GLPI Integration")
@@ -87,11 +89,14 @@ public class GLPIRestService implements ResourceContainer {
           @ApiResponse(responseCode = "500", description = "Internal server error"), })
   public Response getGLPISettings() {
     try {
+      Identity identity = ConversationState.getCurrent().getIdentity();
       GLPISettings glpiSettings = glpiService.getGLPISettings();
       if (glpiSettings == null) {
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.NOT_FOUND)
+                       .entity(EntityBuilder.toGLPISettingsResponseEntity(null, identity))
+                       .build();
       }
-      return Response.ok(EntityBuilder.toGLPISettingsEntity(glpiSettings)).build();
+      return Response.ok(EntityBuilder.toGLPISettingsResponseEntity(glpiSettings, identity)).build();
     } catch (Exception e) {
       LOG.error("Error while getting GLPI Settings", e);
       return Response.serverError().entity(e.getMessage()).build();
