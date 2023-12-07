@@ -17,23 +17,36 @@
 -->
 
 <template>
-  <div class="mt-auto mb-auto align-center">
-    <p>
-      {{ $t('glpi.no.settings.message') }}
+  <div class="d-flex">
+    <p class="text-break pt-1 mb-auto mt-auto widget-text-header text-truncate-1">
+      {{ $t('glpi.settings.last.requests.label') }}
     </p>
     <v-btn
-      class="btn btn-primary"
-      color="primary"
-      flat
-      outlined
+      v-if="isAdmin && hover"
+      class="ms-auto my-0 pt-1 grey--text text--lighten-1"
+      small
+      icon
       @click="openSettingsDrawer">
-      {{ $t('glpi.settings.label') }}
+      <v-icon
+        size="20">
+        fas fa-cog
+      </v-icon>
     </v-btn>
   </div>
 </template>
 
 <script>
 export default {
+  props: {
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
+    hover: {
+      type: Boolean,
+      default: false,
+    },
+  },
   methods: {
     openSettingsDrawer() {
       this.$emit('open-settings-drawer');
