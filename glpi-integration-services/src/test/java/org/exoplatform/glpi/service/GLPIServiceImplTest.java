@@ -64,7 +64,12 @@ public class GLPIServiceImplTest {
     exception = assertThrows(IllegalArgumentException.class, () -> this.glpiService.saveGLPISettings("url", "token", 0));
     assertEquals("GLPI max Tickets to display should be between 1 and 10", exception.getMessage());
 
-    glpiService.saveGLPISettings("url", "token", 10);
+    GLPISettings glpiSettings = glpiService.saveGLPISettings("url", "token", 10);
+
+    assertNotNull(glpiSettings);
+    assertEquals("url", glpiSettings.getServerApiUrl());
+    assertEquals("token", glpiSettings.getAppToken());
+    assertEquals(10, glpiSettings.getMaxTicketsToDisplay());
     verify(settingService, times(3)).set(any(), any(), anyString(), any());
   }
 
