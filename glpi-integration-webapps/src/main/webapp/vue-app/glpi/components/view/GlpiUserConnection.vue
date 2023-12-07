@@ -1,4 +1,4 @@
-/*
+<!--
  * Copyright (C) 2023 eXo Platform SAS.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,29 +13,31 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+ *
+-->
 
-package org.exoplatform.glpi.service;
+<template>
+  <div class="mt-auto mb-auto align-center">
+    <p>
+      {{ $t('glpi.no.connection.message') }}
+    </p>
+    <v-btn
+      class="btn btn-primary"
+      color="primary"
+      flat
+      outlined
+      @click="openConnectionDrawer">
+      {{ $t('glpi.connection.label') }}
+    </v-btn>
+  </div>
+</template>
 
-import org.exoplatform.glpi.model.GLPISettings;
-
-public interface GLPIService {
-
-  /**
-   * Saves GLPI settings
-   *
-   * @param serverApiUrl       server api url
-   * @param appToken           app token generated in api client
-   * @param maxTicketToDisplay max tickets to display
-   * @return {@link GLPISettings}
-   */
-  GLPISettings saveGLPISettings(String serverApiUrl, String appToken, int maxTicketToDisplay);
-
-  /**
-   * Retrieves saved GLPI settings
-   *
-   * @return {@link GLPISettings}
-   */
-  GLPISettings getGLPISettings();
-
-}
+<script>
+export default {
+  methods: {
+    openConnectionDrawer() {
+      this.$emit('open-connection-drawer');
+    }
+  }
+};
+</script>

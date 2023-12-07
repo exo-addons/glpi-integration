@@ -18,15 +18,29 @@
 
 <template>
   <v-app v-if="showApplication">
-    <v-card
-      min-width="100%"
-      max-width="100%"
-      min-height="400"
-      class="d-flex border-box-sizing flex-column pa-3 overflow-hidden position-relative card-border-radius"
-      color="white"
-      flat>
-      <glpi-add-settings v-if="!hasGLPISettings" />
-    </v-card>
+    <v-hover v-slot="{ hover }">
+      <v-card
+        min-width="100%"
+        max-width="100%"
+        min-height="400"
+        class="d-flex border-box-sizing flex-column pa-3 overflow-hidden position-relative card-border-radius"
+        color="white"
+        flat>
+        <glpi-header
+          :is-admin="isAdmin"
+          :hover="hover"
+          @open-settings-drawer="openSettingsDrawer" />
+        <glpi-add-settings
+          v-if="!hasGLPISettings"
+          @open-settings-drawer="openSettingsDrawer" />
+        <glpi-user-connection
+          v-else />
+      </v-card>
+    </v-hover>
+    <glpi-settings-drawer
+      :is-saving-settings="isSavingSettings"
+      ref="settingsDrawer"
+      @save-glpi-settings="saveGLPISettings" />
   </v-app>
 </template>
 
@@ -34,19 +48,43 @@
 export default {
   data() {
     return {
-      hasGLPISettings: false,
-      isAdmin: false
+      isSavingSettings: false,
+      isAdmin: false,
+      glpiSettings: null
     };
   },
   beforeCreate() {
     this.$glpiService.getGLPISettings().then(response => {
-      this.hasGLPISettings = response?.glpiSettings !== null;
+      this.glpiSettings = response?.glpiSettings;
       this.isAdmin = response?.admin;
     });
   },
   computed: {
     showApplication() {
       return this.hasGLPISettings || !this.hasGLPISettings && this.isAdmin;
+    },
+    hasGLPISettings() {
+      return !!this.glpiSettings;
+    }
+  },
+  methods: {
+    openSettingsDrawer() {
+      this.$root.$emit('open-glpi-settings-drawer', this.glpiSettings);
+    },
+    closeSettingsDrawer() {
+      this.$root.$emit('close-glpi-settings-drawer');
+    },
+    saveGLPISettings(glpiSettings) {
+      this.isSavingSettings = true;
+      return this.$glpiService.saveGLPISettings(glpiSettings).then((glpiSettings) => {
+        this.glpiSettings = glpiSettings;
+        this.$root.$emit('alert-message', this.$t('glpi.settings.saved.success.message'), 'success');
+      }).catch(() => {
+        this.$root.$emit('alert-message', this.$t('glpi.settings.saved.error.message'), 'error');
+      }).finally(() => {
+        this.isSavingSettings = false;
+        this.closeSettingsDrawer();
+      });
     }
   }
 };
