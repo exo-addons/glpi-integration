@@ -46,7 +46,7 @@ public class GLPIServiceImpl implements GLPIService {
    * {@inheritDoc}
    */
   @Override
-  public void saveGLPISettings(String serverApiUrl, String appToken, int maxTicketToDisplay) {
+  public GLPISettings saveGLPISettings(String serverApiUrl, String appToken, int maxTicketToDisplay) {
     if (StringUtils.isBlank(serverApiUrl)) {
       throw new IllegalArgumentException("GLPI serverApiUrl is mandatory");
     }
@@ -68,6 +68,7 @@ public class GLPIServiceImpl implements GLPIService {
                             GLPI_INTEGRATION_SETTING_SCOPE,
                             GLPI_INTEGRATION_MAX_DISPLAY_TICKETS_SETTING_KEY,
                             SettingValue.create(String.valueOf(maxTicketToDisplay)));
+    return new GLPISettings(serverApiUrl, appToken, maxTicketToDisplay);
   }
 
   /**

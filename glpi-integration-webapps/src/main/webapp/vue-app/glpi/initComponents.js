@@ -18,12 +18,18 @@
 
 import GlpiApp from './components/GlpiApp.vue';
 import GlpiAddSettings from './components/settings/GlpiAddSettings.vue';
+import GlpiSettingsDrawer from './components/settings/GlpiSettingsDrawer.vue';
+import GlpiHeader from './components/view/GlpiHeader.vue';
+import GlpiUserConnection from './components/view/GlpiUserConnection.vue';
 
 import * as glpiService from './js/GLPIService';
 
 const components = {
   'glpi-app': GlpiApp,
-  'glpi-add-settings': GlpiAddSettings
+  'glpi-add-settings': GlpiAddSettings,
+  'glpi-settings-drawer': GlpiSettingsDrawer,
+  'glpi-header': GlpiHeader,
+  'glpi-user-connection': GlpiUserConnection
 };
 
 for (const key in components) {

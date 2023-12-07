@@ -68,10 +68,10 @@ public class GLPIRestService implements ResourceContainer {
       return Response.status(Response.Status.BAD_REQUEST).entity("GLPISettings object is mandatory").build();
     }
     try {
-      glpiService.saveGLPISettings(glpiSettingsEntity.getServerApiUrl(),
-                                   glpiSettingsEntity.getAppToken(),
-                                   glpiSettingsEntity.getMaxTicketsToDisplay());
-      return Response.status(Response.Status.CREATED).build();
+      GLPISettings glpiSettings = glpiService.saveGLPISettings(glpiSettingsEntity.getServerApiUrl(),
+                                                               glpiSettingsEntity.getAppToken(),
+                                                               glpiSettingsEntity.getMaxTicketsToDisplay());
+      return Response.status(Response.Status.CREATED).entity(EntityBuilder.toGLPISettingsEntity(glpiSettings)).build();
     } catch (Exception e) {
       LOG.error("Error while saving GLPI Settings", e);
       return Response.serverError().entity(e.getMessage()).build();
