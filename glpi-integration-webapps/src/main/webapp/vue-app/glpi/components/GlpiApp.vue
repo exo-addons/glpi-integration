@@ -23,7 +23,7 @@
         min-width="100%"
         max-width="100%"
         min-height="400"
-        class="d-flex border-box-sizing flex-column pa-3 overflow-hidden position-relative card-border-radius"
+        class="d-flex border-box-sizing flex-column pa-5 overflow-hidden position-relative card-border-radius"
         color="white"
         flat>
         <glpi-header

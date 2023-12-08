@@ -18,12 +18,12 @@
 
 <template>
   <div class="d-flex">
-    <p class="text-break pt-1 mb-auto mt-auto widget-text-header text-truncate-1">
+    <p class="pt-1 mb-auto mt-auto widget-text-header text-truncate">
       {{ $t('glpi.settings.last.requests.label') }}
     </p>
     <v-btn
       v-if="isAdmin && hover"
-      class="ms-auto my-0 pt-1 grey--text text--lighten-1"
+      class="ms-auto my-0 pt-1 icon-default-color"
       small
       icon
       @click="openSettingsDrawer">
