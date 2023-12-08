@@ -17,8 +17,10 @@
 
 package org.exoplatform.glpi.rest;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.lang3.StringUtils;
 import org.exoplatform.glpi.model.GLPISettings;
 import org.exoplatform.glpi.rest.model.GLPISettingsEntity;
 import org.exoplatform.glpi.rest.utils.EntityBuilder;
@@ -99,6 +101,30 @@ public class GLPIRestService implements ResourceContainer {
       return Response.ok(EntityBuilder.toGLPISettingsResponseEntity(glpiSettings, identity)).build();
     } catch (Exception e) {
       LOG.error("Error while getting GLPI Settings", e);
+      return Response.serverError().entity(e.getMessage()).build();
+    }
+  }
+
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @RolesAllowed("users")
+  @Path("/token")
+  @Operation(summary = "Save GLPI user token", description = "Save GLPI user token", method = "POST")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "204", description = "Request fulfilled"),
+          @ApiResponse(responseCode = "400", description = "Invalid query input"),
+          @ApiResponse(responseCode = "500", description = "Internal server error"), })
+  public Response saveGLPIUserToken(@Parameter(description = "GLPI user token", required = true)
+                                    String token) {
+    if (StringUtils.isBlank(token)) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("GLPI user token is mandatory").build();
+    }
+    Identity identity = ConversationState.getCurrent().getIdentity();
+    try {
+      glpiService.saveUserToken(token, identity.getUserId());
+      return Response.noContent().build();
+    } catch (Exception e) {
+      LOG.error("Error while saving GLPI user token", e);
       return Response.serverError().entity(e.getMessage()).build();
     }
   }
