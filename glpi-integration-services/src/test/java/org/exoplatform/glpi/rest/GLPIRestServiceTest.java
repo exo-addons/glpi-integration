@@ -88,4 +88,16 @@ public class GLPIRestServiceTest {
     response = glpiRestService.getGLPISettings();
     assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
   }
+
+  @Test
+  public void saveGLPIUserToken() {
+    Response response = glpiRestService.saveGLPIUserToken(null);
+    assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    when(identity.getUserId()).thenReturn("1");
+    response = glpiRestService.saveGLPIUserToken("token");
+    assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+    doThrow(new RuntimeException()).when(glpiService).saveUserToken("token", "1");
+    response = glpiRestService.saveGLPIUserToken("token");
+    assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+  }
 }
