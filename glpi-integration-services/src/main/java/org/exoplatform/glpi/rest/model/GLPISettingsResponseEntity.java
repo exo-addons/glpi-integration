@@ -30,5 +30,7 @@ public class GLPISettingsResponseEntity implements Serializable {
 
   private GLPISettingsEntity glpiSettings;
 
+  private boolean            hasValidUserToken;
+
   private boolean            isAdmin;
 }

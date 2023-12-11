@@ -160,11 +160,26 @@ public class GLPIServiceImpl implements GLPIService {
     return userTokenSettingValue.getValue().toString();
   }
 
-  private String initSession(String userIdentityId) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isUserTokenValid(String userToken) {
+    if (userToken == null) {
+      return false;
+    }
+    String sessionToken = initSession(userToken);
+    if (sessionToken != null) {
+      killSession(sessionToken);
+      return true;
+    }
+    return false;
+  }
+  
+  private String initSession(String userToken) {
     long startTime = System.currentTimeMillis();
     GLPISettings glpiSettings = getGLPISettings();
-    String userToken = getUserToken(userIdentityId);
-    if (glpiSettings == null || userToken == null) {
+    if (glpiSettings == null) {
       return null;
     }
     try {
@@ -178,11 +193,11 @@ public class GLPIServiceImpl implements GLPIService {
       JSONObject jsonResponse = new JSONObject(responseString);
       return jsonResponse.getString("session_token");
     } catch (HttpResponseException e) {
-      LOG.error("remote_service={} operation={} parameters=\"userIdentityId:{}, status=ko "
+      LOG.error("remote_service={} operation={} parameters=\"user token:{}, status=ko "
           + "duration_ms={} error_msg=\"{}, status : {} \"",
                 GLPI_SERVICE_API,
                 "GLPI initSession",
-                userIdentityId,
+                userToken,
                 System.currentTimeMillis() - startTime,
                 e.getReasonPhrase(),
                 e.getStatusCode());
