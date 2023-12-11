@@ -38,4 +38,23 @@ public interface GLPIService {
    */
   GLPISettings getGLPISettings();
 
+
+  /**
+   * Save user token
+   *
+   * @param userToken user token
+   * @param userIdentityId user identity id
+   * @return saved token
+   */
+  String saveUserToken(String userToken, String userIdentityId);
+
+
+  /**
+   * Retrieves saved user token
+   *
+   * @param userIdentityId user identity id
+   * @return saved token
+   */
+  String getUserToken(String userIdentityId);
+
 }
