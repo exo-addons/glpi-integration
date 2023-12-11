@@ -18,9 +18,6 @@
 
 <template>
   <div class="mt-auto mb-auto align-center">
-    <p>
-      {{ $t('glpi.no.connection.message') }}
-    </p>
     <v-btn
       class="btn btn-primary"
       color="primary"
