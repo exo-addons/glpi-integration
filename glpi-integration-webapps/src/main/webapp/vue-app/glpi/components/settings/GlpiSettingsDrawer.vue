@@ -19,15 +19,16 @@
 <template>
   <exo-drawer
     ref="glpiSettingsDrawer"
+    allow-expand
     right>
     <template slot="title">
-      <span>
+      <span class="text-color">
         {{ $t('glpi.create.connection.message') }}
       </span>
     </template>
     <template slot="content">
       <div class="pa-4">
-        <div>
+        <div class="text-color">
           <p>
             {{ $t('glpi.enable.users.connection.message') }}
           </p>
@@ -39,34 +40,40 @@
           <v-form
             v-model="valid"
             ref="settingsForm">
-            <v-label for="serverApiUrl">
-              {{ $t('glpi.settings.server.api.url.label') }}
+            <v-label
+              for="serverApiUrl">
+              <span class="text-subtitle-2 mt-5 mb-3">
+                {{ $t('glpi.settings.server.api.url.label') }}
+              </span>
             </v-label>
             <v-text-field
               v-model="glpiSettings.serverApiUrl"
               :rules="[rules.required]"
               name="serverApiUrl"
               class="mt-n3 mb-2"
-              :placeholder="$t('glpi.settings.server.api.url.label')"
+              :placeholder="$t('glpi.settings.server.api.url.placeholder')"
               dense
               outlined />
-            <v-label for="appToken">
-              {{ $t('glpi.settings.app.token.label') }}
+            <v-label
+              for="appToken">
+              <span class="text-subtitle-2 mt-5 mb-3">
+                {{ $t('glpi.settings.app.token.label') }}
+              </span>
             </v-label>
             <v-text-field
               v-model="glpiSettings.appToken"
               :rules="[rules.required]"
               name="appToken"
               class="mt-n3 mb-2"
-              :placeholder="$t('glpi.settings.app.token.label')"
+              :placeholder="$t('glpi.settings.app.token.placeholder')"
               dense
               outlined />
-            <v-label for="maxTicketsToDisplay">
-              {{ $t('glpi.settings.max.tickets.display.label') }}
+            <v-label
+              for="maxTicketsToDisplay">
+              <span class="text-subtitle-2 mt-5 mb-3">
+                {{ $t('glpi.settings.max.tickets.display.label') }}
+              </span>
             </v-label>
-            <span class="text-caption grey--text">
-              ({{ $t('glpi.settings.max.tickets.display.hint.message') }})
-            </span>
             <v-text-field
               v-model="glpiSettings.maxTicketsToDisplay"
               :rules="[rules.TicketsRule]"
@@ -75,7 +82,7 @@
               type="number"
               min="1"
               max="10"
-              :placeholder="$t('glpi.settings.max.tickets.display.label')"
+              :placeholder="$t('glpi.settings.max.tickets.display.hint.message')"
               dense
               outlined />
           </v-form>
