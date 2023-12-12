@@ -57,4 +57,11 @@ public interface GLPIService {
    */
   String getUserToken(String userIdentityId);
 
+  /**
+   * Checks if user token valid
+   * 
+   * @param userToken user token
+   * @return true if token valid or false if else
+   */
+  boolean isUserTokenValid(String userToken);
 }

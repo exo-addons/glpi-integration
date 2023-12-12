@@ -52,3 +52,20 @@ export function getGLPISettings() {
     }
   });
 }
+
+export function saveUserToken(token) {
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/v1/glpi-integration/token`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: token,
+  }).then(resp => {
+    if (!resp?.ok) {
+      throw resp;
+    } else {
+      return resp.text();
+    }
+  });
+}
