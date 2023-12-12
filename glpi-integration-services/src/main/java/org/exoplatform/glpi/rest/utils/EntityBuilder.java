@@ -20,6 +20,7 @@ package org.exoplatform.glpi.rest.utils;
 import org.exoplatform.glpi.model.GLPISettings;
 import org.exoplatform.glpi.rest.model.GLPISettingsEntity;
 import org.exoplatform.glpi.rest.model.GLPISettingsResponseEntity;
+import org.exoplatform.glpi.service.GLPIService;
 import org.exoplatform.services.security.Identity;
 
 public class EntityBuilder {
@@ -29,16 +30,20 @@ public class EntityBuilder {
   private EntityBuilder() {
   }
 
-  public static GLPISettingsEntity toGLPISettingsEntity(GLPISettings glpiSettings) {
+  public static GLPISettingsEntity toGLPISettingsEntity(GLPISettings glpiSettings, boolean isAdmin) {
     if (glpiSettings == null) {
       return null;
     }
+    String appToken = isAdmin ? glpiSettings.getAppToken(): null;
     return new GLPISettingsEntity(glpiSettings.getServerApiUrl(),
-                                  glpiSettings.getAppToken(),
+                                  appToken,
                                   glpiSettings.getMaxTicketsToDisplay());
   }
 
-  public static Object toGLPISettingsResponseEntity(GLPISettings glpiSettings, Identity identity) {
-    return new GLPISettingsResponseEntity(toGLPISettingsEntity(glpiSettings), identity.isMemberOf(ADMINISTRATORS_GROUP));
+  public static Object toGLPISettingsResponseEntity(GLPISettings glpiSettings, Identity identity, GLPIService glpiService) {
+    boolean isAdmin = identity.isMemberOf(ADMINISTRATORS_GROUP);
+    return new GLPISettingsResponseEntity(toGLPISettingsEntity(glpiSettings, isAdmin),
+                                          glpiService.isUserTokenValid(glpiService.getUserToken(identity.getUserId())),
+                                          isAdmin);
   }
 }

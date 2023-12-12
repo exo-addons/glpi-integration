@@ -73,7 +73,7 @@ public class GLPIRestService implements ResourceContainer {
       GLPISettings glpiSettings = glpiService.saveGLPISettings(glpiSettingsEntity.getServerApiUrl(),
                                                                glpiSettingsEntity.getAppToken(),
                                                                glpiSettingsEntity.getMaxTicketsToDisplay());
-      return Response.status(Response.Status.CREATED).entity(EntityBuilder.toGLPISettingsEntity(glpiSettings)).build();
+      return Response.status(Response.Status.CREATED).entity(EntityBuilder.toGLPISettingsEntity(glpiSettings, true)).build();
     } catch (Exception e) {
       LOG.error("Error while saving GLPI Settings", e);
       return Response.serverError().entity(e.getMessage()).build();
@@ -95,10 +95,10 @@ public class GLPIRestService implements ResourceContainer {
       GLPISettings glpiSettings = glpiService.getGLPISettings();
       if (glpiSettings == null) {
         return Response.status(Response.Status.NOT_FOUND)
-                       .entity(EntityBuilder.toGLPISettingsResponseEntity(null, identity))
+                       .entity(EntityBuilder.toGLPISettingsResponseEntity(null, identity, glpiService))
                        .build();
       }
-      return Response.ok(EntityBuilder.toGLPISettingsResponseEntity(glpiSettings, identity)).build();
+      return Response.ok(EntityBuilder.toGLPISettingsResponseEntity(glpiSettings, identity, glpiService)).build();
     } catch (Exception e) {
       LOG.error("Error while getting GLPI Settings", e);
       return Response.serverError().entity(e.getMessage()).build();
@@ -113,6 +113,7 @@ public class GLPIRestService implements ResourceContainer {
   @ApiResponses(value = {
           @ApiResponse(responseCode = "204", description = "Request fulfilled"),
           @ApiResponse(responseCode = "400", description = "Invalid query input"),
+          @ApiResponse(responseCode = "401", description = "not authorized"),
           @ApiResponse(responseCode = "500", description = "Internal server error"), })
   public Response saveGLPIUserToken(@Parameter(description = "GLPI user token", required = true)
                                     String token) {
@@ -121,6 +122,9 @@ public class GLPIRestService implements ResourceContainer {
     }
     Identity identity = ConversationState.getCurrent().getIdentity();
     try {
+      if (!glpiService.isUserTokenValid(token)) {
+        return Response.status(Response.Status.UNAUTHORIZED).entity("token is not valid").build();
+      }
       glpiService.saveUserToken(token, identity.getUserId());
       return Response.noContent().build();
     } catch (Exception e) {

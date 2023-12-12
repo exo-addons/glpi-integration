@@ -18,71 +18,37 @@
 
 <template>
   <exo-drawer
-    ref="glpiSettingsDrawer"
+    ref="glpiUserConnectionDrawer"
     allow-expand
     right>
     <template slot="title">
       <span class="text-color">
-        {{ $t('glpi.create.connection.message') }}
+        {{ $t('glpi.user.connection.message') }}
       </span>
     </template>
     <template slot="content">
       <div class="pa-4">
         <div class="text-color">
           <p>
-            {{ $t('glpi.enable.users.connection.message') }}
-          </p>
-          <p>
-            {{ $t('glpi.users.connection.todo.message') }}
+            {{ $t('glpi.user.connection.todo.message') }}
           </p>
         </div>
         <div class="mt-5">
           <v-form
             v-model="valid"
-            ref="settingsForm">
+            ref="connectionForm">
             <v-label
-              for="serverApiUrl">
+              for="userToken">
               <span class="text-subtitle-2 mt-5 mb-3">
-                {{ $t('glpi.settings.server.api.url.label') }}
+                {{ $t('glpi.connection.user.token.label') }}
               </span>
             </v-label>
             <v-text-field
-              v-model="glpiSettings.serverApiUrl"
+              v-model="token"
               :rules="[rules.required]"
-              name="serverApiUrl"
+              name="userToken"
               class="mt-n3 mb-2"
               :placeholder="$t('glpi.settings.server.api.url.placeholder')"
-              dense
-              outlined />
-            <v-label
-              for="appToken">
-              <span class="text-subtitle-2 mt-5 mb-3">
-                {{ $t('glpi.settings.app.token.label') }}
-              </span>
-            </v-label>
-            <v-text-field
-              v-model="glpiSettings.appToken"
-              :rules="[rules.required]"
-              name="appToken"
-              class="mt-n3 mb-2"
-              :placeholder="$t('glpi.settings.app.token.placeholder')"
-              dense
-              outlined />
-            <v-label
-              for="maxTicketsToDisplay">
-              <span class="text-subtitle-2 mt-5 mb-3">
-                {{ $t('glpi.settings.max.tickets.display.label') }}
-              </span>
-            </v-label>
-            <v-text-field
-              v-model="glpiSettings.maxTicketsToDisplay"
-              :rules="[rules.TicketsRule]"
-              name="maxTicketsToDisplay"
-              class="mt-n3 mb-2"
-              type="number"
-              min="1"
-              max="10"
-              :placeholder="$t('glpi.settings.max.tickets.display.hint.message')"
               dense
               outlined />
           </v-form>
@@ -97,10 +63,10 @@
           {{ $t('glpi.settings.cancel.label') }}
         </v-btn>
         <v-btn
-          :loading="isSavingSettings"
+          :loading="isSavingToken"
           :disabled="!valid"
           class="btn btn-primary"
-          @click="addGLPISettings">
+          @click="saveUserToken">
           {{ $t('glpi.settings.validate.label') }}
         </v-btn>
       </div>
@@ -109,10 +75,9 @@
 </template>
 
 <script>
-
 export default {
   props: {
-    isSavingSettings: {
+    isSavingToken: {
       type: Boolean,
       default: false
     }
@@ -120,30 +85,27 @@ export default {
   data() {
     return {
       valid: false,
-      glpiSettings: {},
+      token: null,
       rules: {
-        TicketsRule: v => v <= 10 && v >=1 || this.$t('glpi.settings.max.tickets.display.hint.message'),
         required: v => !!v || this.$t('glpi.settings.form.required.error.message'),
       }
     };
   },
   created() {
-    this.$root.$on('open-glpi-settings-drawer', this.openDrawer);
+    this.$root.$on('open-glpi-user-connection-drawer', this.openDrawer);
   },
   methods: {
-    openDrawer(glpiSettings) {
-      if (glpiSettings) {
-        this.glpiSettings = glpiSettings;
-      }
-      this.$refs.glpiSettingsDrawer.open();
+    openDrawer() {
+      this.$refs.glpiUserConnectionDrawer.open();
     },
     closeDrawer() {
-      this.$refs.settingsForm.reset();
-      this.$refs.glpiSettingsDrawer.close();
+      this.$refs.connectionForm.reset();
+      this.$refs.glpiUserConnectionDrawer.close();
     },
-    addGLPISettings() {
-      this.$emit('save-glpi-settings', this.glpiSettings);
+    saveUserToken() {
+      this.$emit('save-glpi-user-token', this.token);
     }
   }
 };
 </script>
+

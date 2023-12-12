@@ -94,6 +94,9 @@ public class GLPIRestServiceTest {
     Response response = glpiRestService.saveGLPIUserToken(null);
     assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
     when(identity.getUserId()).thenReturn("1");
+    when(glpiService.isUserTokenValid("token")).thenReturn(false, true);
+    response = glpiRestService.saveGLPIUserToken("token");
+    assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     response = glpiRestService.saveGLPIUserToken("token");
     assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
     doThrow(new RuntimeException()).when(glpiService).saveUserToken("token", "1");
