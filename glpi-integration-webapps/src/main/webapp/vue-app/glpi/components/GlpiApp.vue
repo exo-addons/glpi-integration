@@ -34,6 +34,9 @@
           v-if="!hasGLPISettings"
           @open-settings-drawer="openSettingsDrawer" />
         <glpi-user-connection
+          v-else-if="!hasValidGLPIUserToken"
+          @open-connection-drawer="openUserConnectionDrawer" />
+        <glpi-ticket-list
           v-else />
       </v-card>
     </v-hover>
@@ -41,6 +44,10 @@
       :is-saving-settings="isSavingSettings"
       ref="settingsDrawer"
       @save-glpi-settings="saveGLPISettings" />
+    <glpi-user-connection-drawer
+      :is-saving-token="isSavingUserToken"
+      ref="userConnectionDrawer"
+      @save-glpi-user-token="saveUserToken" />
   </v-app>
 </template>
 
@@ -49,13 +56,16 @@ export default {
   data() {
     return {
       isSavingSettings: false,
+      isSavingUserToken: false,
       isAdmin: false,
+      hasValidUserToken: false,
       glpiSettings: null
     };
   },
   beforeCreate() {
     this.$glpiService.getGLPISettings().then(response => {
       this.glpiSettings = response?.glpiSettings;
+      this.hasValidUserToken = response?.hasValidUserToken;
       this.isAdmin = response?.admin;
     });
   },
@@ -65,25 +75,44 @@ export default {
     },
     hasGLPISettings() {
       return !!this.glpiSettings;
+    },
+    hasValidGLPIUserToken() {
+      return this.hasValidUserToken;
     }
   },
   methods: {
     openSettingsDrawer() {
       this.$root.$emit('open-glpi-settings-drawer', this.glpiSettings);
     },
-    closeSettingsDrawer() {
-      this.$root.$emit('close-glpi-settings-drawer');
+    openUserConnectionDrawer() {
+      this.$root.$emit('open-glpi-user-connection-drawer');
     },
     saveGLPISettings(glpiSettings) {
       this.isSavingSettings = true;
       return this.$glpiService.saveGLPISettings(glpiSettings).then((glpiSettings) => {
         this.glpiSettings = glpiSettings;
         this.$root.$emit('alert-message', this.$t('glpi.settings.saved.success.message'), 'success');
+        this.$refs.settingsDrawer.closeDrawer();
       }).catch(() => {
         this.$root.$emit('alert-message', this.$t('glpi.settings.saved.error.message'), 'error');
       }).finally(() => {
         this.isSavingSettings = false;
-        this.closeSettingsDrawer();
+      });
+    },
+    saveUserToken(token) {
+      this.isSavingUserToken = true;
+      return this.$glpiService.saveUserToken(token).then(() => {
+        this.hasValidUserToken = true;
+        this.$root.$emit('alert-message', this.$t('glpi.user.token.saved.success.message'), 'success');
+        this.$refs.userConnectionDrawer.closeDrawer();
+      }).catch((e) => {
+        if (e.status === 401) {
+          this.$root.$emit('alert-message', this.$t('glpi.user.token.not.valid.message'), 'error');
+        } else {
+          this.$root.$emit('alert-message', this.$t('glpi.user.token.saved.error.message'), 'error');
+        }
+      }).finally(() => {
+        this.isSavingUserToken = false;
       });
     }
   }

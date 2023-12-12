@@ -36,6 +36,7 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.exoplatform.commons.api.settings.SettingService;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -132,7 +133,7 @@ public class GLPIServiceImplTest {
   }
 
   @Test
-  public void saveUserToken() {
+  public void saveUserToken() throws IOException {
     Throwable exception = assertThrows(IllegalArgumentException.class, () -> this.glpiService.saveUserToken(null, null));
     assertEquals("GLPI user token is mandatory", exception.getMessage());
     exception = assertThrows(IllegalArgumentException.class, () -> this.glpiService.saveUserToken("token", null));
@@ -162,25 +163,16 @@ public class GLPIServiceImplTest {
                             "GLPIIntegrationServerApiUrlSetting")).thenReturn(serverApiUrlSettingValue);
     when(settingService.get(GLPI_INTEGRATION_SETTING_CONTEXT,
                             GLPI_INTEGRATION_SETTING_SCOPE,
-                            "GLPIIntegrationAppTokenSetting")).thenReturn(null, appTokenSettingValue);
+                            "GLPIIntegrationAppTokenSetting")).thenReturn(appTokenSettingValue);
     when(settingService.get(GLPI_INTEGRATION_SETTING_CONTEXT,
                             GLPI_INTEGRATION_SETTING_SCOPE,
                             "GLPIIntegrationMaxDisplayTicketsSetting")).thenReturn(maxDisplayTicketsSettingValue);
     when(settingService.get(GLPI_USER_TOKEN_SETTING_CONTEXT,
                             GLPI_INTEGRATION_SETTING_SCOPE,
-                            "GLPIUserToken")).thenReturn(null, userTokenSettingValue);
+                            "GLPIUserToken")).thenReturn(userTokenSettingValue);
   }
   
-  @Test
-  public void initSession() throws Exception {
-
-    mockGetGLPISettingsAndUserToken();
-
-    Method initSession = glpiService.getClass().getDeclaredMethod("initSession", String.class);
-    initSession.setAccessible(true);
-    String sessionToken = (String) initSession.invoke(glpiService, "1");
-    assertNull(sessionToken);
-
+  private void mockGetValidSessionTokenResponse() throws IOException {
     HttpResponse httpResponse = mock(HttpResponse.class);
     StatusLine statusLine = mock(StatusLine.class);
     HttpEntity httpEntity = mock(HttpEntity.class);
@@ -189,8 +181,20 @@ public class GLPIServiceImplTest {
     when(httpResponse.getStatusLine()).thenReturn(statusLine);
     ENTITY_UTILS.when(() -> EntityUtils.toString(httpEntity)).thenReturn("{session_token: abc}");
     when(this.httpClient.execute(any())).thenReturn(httpResponse);
+  }
 
-    sessionToken = (String) initSession.invoke(glpiService, "1");
+  @Test
+  public void initSession() throws Exception {
+    Method initSession = glpiService.getClass().getDeclaredMethod("initSession", String.class);
+    initSession.setAccessible(true);
+    String sessionToken = (String) initSession.invoke(glpiService, "abc");
+    assertNull(sessionToken);
+
+    mockGetGLPISettingsAndUserToken();
+
+    mockGetValidSessionTokenResponse();
+
+    sessionToken = (String) initSession.invoke(glpiService, "abc");
     assertEquals("abc", sessionToken);
 
     doThrow(new HttpResponseException(401, "unauthorized")).when(this.httpClient).execute(any());
@@ -200,21 +204,26 @@ public class GLPIServiceImplTest {
     assertNull(initSession.invoke(glpiService, "1"));
   }
 
+  private void mockGetValidKillSessionResponse() throws IOException {
+    HttpResponse httpResponse = mock(HttpResponse.class);
+    StatusLine statusLine = mock(StatusLine.class);
+    when(statusLine.getStatusCode()).thenReturn(204);
+    when(httpResponse.getStatusLine()).thenReturn(statusLine);
+    when(this.httpClient.execute(any())).thenReturn(httpResponse);
+  }
+  
   @Test
   public void killSession() throws Exception {
 
-    mockGetGLPISettingsAndUserToken();
 
     Method killSession = glpiService.getClass().getDeclaredMethod("killSession", String.class);
     killSession.setAccessible(true);
     int statusCode = (Integer) killSession.invoke(glpiService, "abc");
     assertEquals(400, statusCode);
 
-    HttpResponse httpResponse = mock(HttpResponse.class);
-    StatusLine statusLine = mock(StatusLine.class);
-    when(statusLine.getStatusCode()).thenReturn(204);
-    when(httpResponse.getStatusLine()).thenReturn(statusLine);
-    when(this.httpClient.execute(any())).thenReturn(httpResponse);
+    mockGetGLPISettingsAndUserToken();
+
+    mockGetValidKillSessionResponse();
 
     statusCode = (Integer) killSession.invoke(glpiService, "1");
     assertEquals(204, statusCode);
@@ -224,5 +233,14 @@ public class GLPIServiceImplTest {
 
     doThrow(new RuntimeException()).when(this.httpClient).execute(any());
     assertEquals(500, killSession.invoke(glpiService, "1"));
+  }
+
+  @Test
+  public void isUserTokenValid() throws IOException {
+    assertFalse(glpiService.isUserTokenValid(null));
+    assertFalse(glpiService.isUserTokenValid("token"));
+    mockGetGLPISettingsAndUserToken();
+    mockGetValidSessionTokenResponse();
+    assertTrue(glpiService.isUserTokenValid("token"));
   }
 }
