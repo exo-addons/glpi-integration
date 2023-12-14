@@ -18,6 +18,9 @@
 package org.exoplatform.glpi.rest;
 
 import org.exoplatform.glpi.model.GLPISettings;
+import org.exoplatform.glpi.model.GlpiTicket;
+import org.exoplatform.glpi.model.GlpiUser;
+import org.exoplatform.glpi.model.TicketStatus;
 import org.exoplatform.glpi.rest.model.GLPISettingsEntity;
 import org.exoplatform.glpi.service.GLPIService;
 import org.exoplatform.services.security.ConversationState;
@@ -32,6 +35,9 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.ws.rs.core.Response;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -101,6 +107,27 @@ public class GLPIRestServiceTest {
     assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
     doThrow(new RuntimeException()).when(glpiService).saveUserToken("token", "1");
     response = glpiRestService.saveGLPIUserToken("token");
+    assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+  }
+
+  @Test
+  public void getGLPITickets() {
+    GlpiTicket glpiTicket = new GlpiTicket(1L,
+                                           "title",
+                                           "content",
+                                           TicketStatus.NEW,
+                                           new GlpiUser(1L, "user", "first", "last"),
+                                           new ArrayList<>(),
+                                           "solveDate",
+                                           "lastUpdate");
+    List<GlpiTicket> ticketList = new ArrayList<>();
+    ticketList.add(glpiTicket);
+    when(identity.getUserId()).thenReturn("user");
+    when(glpiService.getGLPITickets(0, 10, "user")).thenReturn(ticketList);
+    Response response = glpiRestService.getGLPITickets(0, 10);
+    assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    doThrow(new RuntimeException()).when(glpiService).getGLPITickets(0, 10, "user");
+    response = glpiRestService.getGLPITickets(0, 10);
     assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
   }
 }

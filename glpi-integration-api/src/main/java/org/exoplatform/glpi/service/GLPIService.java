@@ -18,7 +18,9 @@
 package org.exoplatform.glpi.service;
 
 import org.exoplatform.glpi.model.GLPISettings;
-import org.exoplatform.glpi.model.GlpiUser;
+import org.exoplatform.glpi.model.GlpiTicket;
+
+import java.util.List;
 
 public interface GLPIService {
 
@@ -66,12 +68,14 @@ public interface GLPIService {
    */
   boolean isUserTokenValid(String userToken);
 
+
   /**
-   * Retrieves GLPI user info
+   * Get list of glpi tickets
    *
-   * @param glpiUserId GLPI user id
+   * @param offset search offset
+   * @param limit search limit
    * @param userIdentityId user identity id
-   * @return {@link GlpiUser}
+   * @return {@link List} of {@link GlpiTicket}
    */
-  GlpiUser getGLPIUser(long glpiUserId, String userIdentityId);
+  List<GlpiTicket> getGLPITickets(int offset, int limit, String userIdentityId);
 }
