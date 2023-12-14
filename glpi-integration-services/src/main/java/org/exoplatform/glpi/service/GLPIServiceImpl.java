@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.DefaultConnectionReuseStrategy;
 import org.apache.http.impl.client.BasicResponseHandler;
@@ -34,6 +35,7 @@ import org.exoplatform.commons.api.settings.data.Scope;
 import org.exoplatform.glpi.model.GLPISettings;
 
 import org.apache.http.client.HttpClient;
+import org.exoplatform.glpi.model.GlpiUser;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.json.JSONObject;
@@ -175,11 +177,61 @@ public class GLPIServiceImpl implements GLPIService {
     }
     return false;
   }
-  
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public GlpiUser getGLPIUser(long glpiUserId, String userIdentityId) {
+    long startTime = System.currentTimeMillis();
+    String sessionToken = initSession(getUserToken(userIdentityId));
+    HttpGet httpGet = initHttpGet("/User/" + glpiUserId, sessionToken);
+    if (httpGet == null) {
+      return null;
+    }
+    try {
+      HttpResponse httpResponse = httpClient.execute(httpGet);
+      String responseString = new BasicResponseHandler().handleResponse(httpResponse);
+      JSONObject jsonResponse = new JSONObject(responseString);
+      GlpiUser glpiUser = new GlpiUser();
+      glpiUser.setId(jsonResponse.getLong("id"));
+      glpiUser.setName((jsonResponse.getString("name")));
+      glpiUser.setFirstName(jsonResponse.getString("firstname"));
+      glpiUser.setLastName(jsonResponse.getString("realname"));
+      return glpiUser;
+    } catch (HttpResponseException e) {
+      LOG.error("remote_service={} operation={} parameters=\"glpi user id:{}, userIdentityId:{}, status=ko "
+                      + "duration_ms={} error_msg=\"{}, status : {} \"",
+              GLPI_SERVICE_API,
+              "getGLPIUser",
+              glpiUserId,
+              userIdentityId,
+              System.currentTimeMillis() - startTime,
+              e.getReasonPhrase(),
+              e.getStatusCode());
+    } catch (Exception e) {
+      LOG.error("Error while getting GLPI user info", e);
+    } finally {
+      killSession(sessionToken);
+    }
+    return null;
+  }
+
+  private HttpGet initHttpGet(String uri, String sessionToken) {
+    GLPISettings glpiSettings = getGLPISettings();
+    if (glpiSettings == null || sessionToken == null) {
+      return null;
+    }
+    HttpGet httpTypeRequest = new HttpGet(glpiSettings.getServerApiUrl() + uri);
+    httpTypeRequest.setHeader("Session-Token", sessionToken);
+    httpTypeRequest.setHeader("App-Token", glpiSettings.getAppToken());
+    return httpTypeRequest;
+  }
+
   private String initSession(String userToken) {
     long startTime = System.currentTimeMillis();
     GLPISettings glpiSettings = getGLPISettings();
-    if (glpiSettings == null) {
+    if (glpiSettings == null || userToken == null) {
       return null;
     }
     try {
@@ -209,15 +261,12 @@ public class GLPIServiceImpl implements GLPIService {
 
   private int killSession(String sessionToken) {
     long startTime = System.currentTimeMillis();
-    GLPISettings glpiSettings = getGLPISettings();
-    if (glpiSettings == null) {
+    HttpGet httpGet = initHttpGet("/killSession", sessionToken);
+    if (httpGet == null) {
       return HttpURLConnection.HTTP_BAD_REQUEST;
     }
     try {
-      HttpGet httpTypeRequest = new HttpGet(glpiSettings.getServerApiUrl() + "/killSession");
-      httpTypeRequest.setHeader("Session-Token", sessionToken);
-      httpTypeRequest.setHeader("App-Token", glpiSettings.getAppToken());
-      HttpResponse httpResponse = httpClient.execute(httpTypeRequest);
+      HttpResponse httpResponse = httpClient.execute(httpGet);
       return httpResponse.getStatusLine().getStatusCode();
     } catch (HttpResponseException e) {
       LOG.error("remote_service={} operation={} parameters=\"session token:{}, status=ko "
