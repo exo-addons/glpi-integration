@@ -21,17 +21,26 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GlpiUser {
+public class GlpiTicket {
 
-  private long   id;
+  private long         id;
 
-  private String name;
+  private String       title;
 
-  private String firstName;
+  private String       content;
 
-  private String lastName;
+  private TicketStatus status;
 
+  private GlpiUser     creator;
+
+  private List<Object> comments;
+
+  private String       solveDate;
+
+  private String       lastUpdated;
 }

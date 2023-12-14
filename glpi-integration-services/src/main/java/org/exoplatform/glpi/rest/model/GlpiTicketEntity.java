@@ -15,23 +15,34 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.exoplatform.glpi.model;
+package org.exoplatform.glpi.rest.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.exoplatform.glpi.model.TicketStatus;
+
+import java.io.Serializable;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GlpiUser {
+public class GlpiTicketEntity implements Serializable {
 
-  private long   id;
+  private long           id;
 
-  private String name;
+  private String         title;
 
-  private String firstName;
+  private String         content;
 
-  private String lastName;
+  private TicketStatus   status;
 
+  private GlpiUserEntity creator;
+
+  private List<Object>   comments;
+
+  private String         solveDate;
+
+  private String         lastUpdated;
 }

@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.DefaultConnectionReuseStrategy;
 import org.apache.http.impl.client.BasicResponseHandler;
@@ -36,12 +35,17 @@ import org.exoplatform.glpi.model.GLPISettings;
 
 import org.apache.http.client.HttpClient;
 import org.exoplatform.glpi.model.GlpiUser;
+import org.exoplatform.glpi.model.GlpiTicket;
+import org.exoplatform.glpi.model.TicketStatus;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GLPIServiceImpl implements GLPIService {
 
@@ -67,6 +71,18 @@ public class GLPIServiceImpl implements GLPIService {
 
   private static final int     DEFAULT_POOL_CONNECTION                          = 100;
 
+  private static final String  SEARCH_TICKET_CRITERIA                           =
+                                                      "&uid_cols=true&sort[]=19&order[]=DESC&is_deleted=0&criteria[0][link]=AND"
+                                                          + "&criteria[0][field]=4&criteria[0][searchtype]=equals&criteria[0][value]=myself&criteria[1][link]=AND&criteria[1][criteria][0][link]=AND%20NOT"
+                                                          + "&criteria[1][criteria][0][field]=12&criteria[1][criteria][0][searchtype]=equals&criteria[1][criteria][0][value]=6"
+                                                          + "&criteria[1][criteria][2][link]=OR&criteria[1][criteria][2][criteria][0][link]=AND&criteria[1][criteria][2][criteria][0][field]=12"
+                                                          + "&criteria[1][criteria][2][criteria][0][searchtype]=equals&criteria[1][criteria][2][criteria][0][value]=6"
+                                                          + "&criteria[1][criteria][2][criteria][1][link]=AND&criteria[1][criteria][2][criteria][1][field]=17"
+                                                          + "&criteria[1][criteria][2][criteria][1][searchtype]=morethan&_select_criteria[1][criteria][2][criteria][1][value]=-1MONTH"
+                                                          + "&criteria[1][criteria][2][criteria][1][value]=-1MONTH&forcedisplay[0]=21&forcedisplay[1]=25&forcedisplay[2]=5";
+
+  private static GLPISettings GLPI_SETTINGS = null;
+  
   public GLPIServiceImpl(SettingService settingsService) {
     this.settingService = settingsService;
     PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
@@ -104,7 +120,9 @@ public class GLPIServiceImpl implements GLPIService {
                             GLPI_INTEGRATION_SETTING_SCOPE,
                             GLPI_INTEGRATION_MAX_DISPLAY_TICKETS_SETTING_KEY,
                             SettingValue.create(String.valueOf(maxTicketToDisplay)));
-    return new GLPISettings(serverApiUrl, appToken, maxTicketToDisplay);
+
+    GLPI_SETTINGS = new GLPISettings(serverApiUrl, appToken, maxTicketToDisplay);
+    return GLPI_SETTINGS;
   }
 
   /**
@@ -182,9 +200,63 @@ public class GLPIServiceImpl implements GLPIService {
    * {@inheritDoc}
    */
   @Override
-  public GlpiUser getGLPIUser(long glpiUserId, String userIdentityId) {
+  public List<GlpiTicket> getGLPITickets(int offset, int limit, String userIdentityId) {
     long startTime = System.currentTimeMillis();
     String sessionToken = initSession(getUserToken(userIdentityId));
+    HttpGet httpGet = initHttpGet("/search/Ticket?range=" + offset + "-" + limit + SEARCH_TICKET_CRITERIA, sessionToken);
+    if (httpGet == null) {
+      return null;
+    }
+    try {
+      List<GlpiTicket> tickets = new ArrayList<>();
+      HttpResponse httpResponse = httpClient.execute(httpGet);
+      String responseString = new BasicResponseHandler().handleResponse(httpResponse);
+      JSONObject jsonResponse = new JSONObject(responseString);
+      JSONArray jsonArray = jsonResponse.getJSONArray("data");
+      jsonArray.forEach(object -> {
+        GlpiTicket ticket = new GlpiTicket();
+        JSONObject jsonObject = (JSONObject) object;
+        ticket.setId(jsonObject.getLong("Ticket.id"));
+        ticket.setTitle(jsonObject.getString("Ticket.name"));
+        ticket.setContent(jsonObject.getString("Ticket.content"));
+        ticket.setStatus(TicketStatus.values()[jsonObject.getInt("Ticket.status")]);
+        ticket.setCreator(getGLPIUserInfo(jsonObject.getLong("Ticket.Ticket_User.User.name"), sessionToken));
+        Object comments = jsonObject.get("Ticket.ITILFollowup.content");
+        ticket.setComments(!comments.equals(null) ? ((JSONArray) comments).toList() : new ArrayList<>());
+        Object solveDate = jsonObject.get("Ticket.solvedate");
+        ticket.setSolveDate(solveDate != null ? String.valueOf(solveDate) : null);
+        ticket.setLastUpdated(jsonObject.getString("Ticket.date_mod"));
+        tickets.add(ticket);
+      });
+      return tickets;
+    } catch (HttpResponseException e) {
+      LOG.error("remote_service={} operation={} parameters=\"offset:{}, limit:{}, userIdentityId:{}, status=ko "
+          + "duration_ms={} error_msg=\"{}, status : {} \"",
+                GLPI_SERVICE_API,
+                "getGLPITickets",
+                offset,
+                limit,
+                userIdentityId,
+                System.currentTimeMillis() - startTime,
+                e.getReasonPhrase(),
+                e.getStatusCode());
+    } catch (Exception e) {
+      LOG.error("Error while getting GLPI Tickets", e);
+    } finally {
+      killSession(sessionToken);
+    }
+    return null;
+  }
+
+  private GLPISettings getCurrentGLPISettings() {
+    if (GLPI_SETTINGS == null) {
+      GLPI_SETTINGS = getGLPISettings();
+    }
+    return GLPI_SETTINGS;
+  }
+  
+  private GlpiUser getGLPIUserInfo(long glpiUserId, String sessionToken) {
+    long startTime = System.currentTimeMillis();
     HttpGet httpGet = initHttpGet("/User/" + glpiUserId, sessionToken);
     if (httpGet == null) {
       return null;
@@ -196,29 +268,29 @@ public class GLPIServiceImpl implements GLPIService {
       GlpiUser glpiUser = new GlpiUser();
       glpiUser.setId(jsonResponse.getLong("id"));
       glpiUser.setName((jsonResponse.getString("name")));
-      glpiUser.setFirstName(jsonResponse.getString("firstname"));
-      glpiUser.setLastName(jsonResponse.getString("realname"));
+      Object firstName = jsonResponse.get("firstname");
+      Object lastName = jsonResponse.get("realname");
+      glpiUser.setFirstName(firstName != null ? String.valueOf(firstName) : null);
+      glpiUser.setLastName(lastName != null ? String.valueOf(lastName) : null);
       return glpiUser;
     } catch (HttpResponseException e) {
-      LOG.error("remote_service={} operation={} parameters=\"glpi user id:{}, userIdentityId:{}, status=ko "
+      LOG.error("remote_service={} operation={} parameters=\"glpiUserId:{}, sessionToken:{}, status=ko "
                       + "duration_ms={} error_msg=\"{}, status : {} \"",
               GLPI_SERVICE_API,
               "getGLPIUser",
               glpiUserId,
-              userIdentityId,
+              sessionToken,
               System.currentTimeMillis() - startTime,
               e.getReasonPhrase(),
               e.getStatusCode());
     } catch (Exception e) {
       LOG.error("Error while getting GLPI user info", e);
-    } finally {
-      killSession(sessionToken);
     }
     return null;
   }
-
+  
   private HttpGet initHttpGet(String uri, String sessionToken) {
-    GLPISettings glpiSettings = getGLPISettings();
+    GLPISettings glpiSettings = getCurrentGLPISettings();
     if (glpiSettings == null || sessionToken == null) {
       return null;
     }
@@ -230,7 +302,7 @@ public class GLPIServiceImpl implements GLPIService {
 
   private String initSession(String userToken) {
     long startTime = System.currentTimeMillis();
-    GLPISettings glpiSettings = getGLPISettings();
+    GLPISettings glpiSettings = getCurrentGLPISettings();
     if (glpiSettings == null || userToken == null) {
       return null;
     }
