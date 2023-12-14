@@ -18,6 +18,7 @@
 package org.exoplatform.glpi.service;
 
 import org.exoplatform.glpi.model.GLPISettings;
+import org.exoplatform.glpi.model.GlpiUser;
 
 public interface GLPIService {
 
@@ -64,4 +65,13 @@ public interface GLPIService {
    * @return true if token valid or false if else
    */
   boolean isUserTokenValid(String userToken);
+
+  /**
+   * Retrieves GLPI user info
+   *
+   * @param glpiUserId GLPI user id
+   * @param userIdentityId user identity id
+   * @return {@link GlpiUser}
+   */
+  GlpiUser getGLPIUser(long glpiUserId, String userIdentityId);
 }
