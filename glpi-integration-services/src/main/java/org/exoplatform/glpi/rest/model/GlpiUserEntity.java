@@ -15,16 +15,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.exoplatform.glpi.model;
+package org.exoplatform.glpi.rest.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GlpiUser {
+public class GlpiUserEntity implements Serializable {
 
   private long   id;
 
@@ -33,5 +35,4 @@ public class GlpiUser {
   private String firstName;
 
   private String lastName;
-
 }

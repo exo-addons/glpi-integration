@@ -38,6 +38,7 @@ import org.exoplatform.commons.api.settings.SettingService;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
@@ -253,16 +254,12 @@ public class GLPIServiceImplTest {
   }
 
   @Test
-  public void getGLPIUser() throws IOException {
-    assertNull(glpiService.getGLPIUser(1L, "user"));
+  public void getGLPIUserInfo() throws Exception {
+    Method getGLPIUserInfo = glpiService.getClass().getDeclaredMethod("getGLPIUserInfo", long.class, String.class);
+    getGLPIUserInfo.setAccessible(true);
+    assertNull(getGLPIUserInfo.invoke(glpiService, 1L, "abc"));
     mockGetGLPISettingsAndUserToken();
 
-    HttpResponse initSessionResponse = mock(HttpResponse.class);
-    mockGetValidSessionTokenResponse(initSessionResponse);
-    
-    HttpResponse killSessionResponse = mock(HttpResponse.class);
-    mockGetValidKillSessionResponse(initSessionResponse);
-    
     HttpResponse userInfoHttpResponse = mock(HttpResponse.class);
     StatusLine statusLine = mock(StatusLine.class);
     HttpEntity httpEntity = mock(HttpEntity.class);
@@ -271,13 +268,48 @@ public class GLPIServiceImplTest {
     when(userInfoHttpResponse.getStatusLine()).thenReturn(statusLine);
     ENTITY_UTILS.when(() -> EntityUtils.toString(httpEntity)).thenReturn("{id: 1, name: user, firstname: first, realname:last}");
 
-    when(this.httpClient.execute(any())).thenReturn(initSessionResponse, userInfoHttpResponse, killSessionResponse);
-    assertNotNull(glpiService.getGLPIUser(1L, "user"));
+    when(this.httpClient.execute(any())).thenReturn(userInfoHttpResponse);
+    assertNotNull(getGLPIUserInfo.invoke(glpiService, 1L, "abc"));
 
     doThrow(new HttpResponseException(401, "unauthorized")).when(this.httpClient).execute(any());
-    assertNull(glpiService.getGLPIUser(1L, "user"));
+    assertNull(getGLPIUserInfo.invoke(glpiService, 1L, "abc"));
 
     doThrow(new RuntimeException()).when(this.httpClient).execute(any());
-    assertNull(glpiService.getGLPIUser(1L, "user"));
+    assertNull(getGLPIUserInfo.invoke(glpiService, 1L, "abc"));
+  }
+
+  @Test
+  public void getGLPITickets() throws Exception {
+    assertNull(glpiService.getGLPITickets(0, 3, null));
+    mockGetGLPISettingsAndUserToken();
+
+    HttpResponse initSessionResponse = mock(HttpResponse.class);
+    mockGetValidSessionTokenResponse(initSessionResponse);
+
+    HttpResponse killSessionResponse = mock(HttpResponse.class);
+    mockGetValidKillSessionResponse(initSessionResponse);
+
+    HttpResponse listTicketsHttpResponse = mock(HttpResponse.class);
+    StatusLine statusLine = mock(StatusLine.class);
+    HttpEntity httpEntity = mock(HttpEntity.class);
+    when(statusLine.getStatusCode()).thenReturn(204);
+    when(listTicketsHttpResponse.getEntity()).thenReturn(httpEntity);
+    when(listTicketsHttpResponse.getStatusLine()).thenReturn(statusLine);
+    ENTITY_UTILS.when(() -> EntityUtils.toString(httpEntity))
+                .thenReturn("{data: [{\"Ticket.content\":\"&#60;p&#62;content&#60;/p&#62;\","
+                    + "\"Ticket.solvedate\":null,\"Ticket.date_mod\":\"2023-12-12 09:46:54\","
+                    + "\"Ticket.status\":1,\"Ticket.id\":3,\"Ticket.ITILFollowup.content\":null,"
+                    + "\"Ticket.name\":\"title\",\"Ticket.Ticket_User.User.name\":\"8\"}]}");
+
+    assertNull(glpiService.getGLPITickets(0, 3, "user"));
+
+    when(this.httpClient.execute(any())).thenReturn(initSessionResponse, listTicketsHttpResponse, killSessionResponse);
+    assertNotNull(glpiService.getGLPITickets(0, 3, "user"));
+
+    doThrow(new HttpResponseException(401, "unauthorized")).when(this.httpClient).execute(any());
+    assertNull(glpiService.getGLPITickets(0, 3, "user"));
+
+    doThrow(new RuntimeException()).when(this.httpClient).execute(any());
+    assertNull(glpiService.getGLPITickets(0, 3, "user"));
   }
 }

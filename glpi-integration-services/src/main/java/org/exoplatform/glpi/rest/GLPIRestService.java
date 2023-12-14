@@ -30,10 +30,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -129,6 +126,28 @@ public class GLPIRestService implements ResourceContainer {
       return Response.noContent().build();
     } catch (Exception e) {
       LOG.error("Error while saving GLPI user token", e);
+      return Response.serverError().entity(e.getMessage()).build();
+    }
+  }
+
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @RolesAllowed("users")
+  @Path("/tickets")
+  @Operation(summary = "Retrieves GLPI ticket list", description = "Retrieves GLPI ticket list", method = "GET")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "204", description = "Request fulfilled"),
+          @ApiResponse(responseCode = "500", description = "Internal server error"), })
+  public Response getGLPITickets(@Parameter(description = "Ticket list result limit")
+                                 @DefaultValue("0") @QueryParam("offset") int offset,
+                                 @Parameter(description = "Ticket list result offset")
+                                 @DefaultValue("10") @QueryParam("limit") int limit) {
+    Identity identity = ConversationState.getCurrent().getIdentity();
+    try {
+      return Response.ok(EntityBuilder.toGLPITicketListEntity(glpiService.getGLPITickets(offset, limit, identity.getUserId())))
+                     .build();
+    } catch (Exception e) {
+      LOG.error("Error while getting GLPI tickets", e);
       return Response.serverError().entity(e.getMessage()).build();
     }
   }
