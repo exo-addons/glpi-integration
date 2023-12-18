@@ -23,7 +23,8 @@ import GlpiHeader from './components/view/GlpiHeader.vue';
 import GlpiUserConnection from './components/view/GlpiUserConnection.vue';
 import GlpiUserConnectionDrawer from './components/view/GlpiUserConnectionDrawer.vue';
 import GlpiTicketList from './components/ticket/GlpiTicketList.vue';
-
+import GlpiTicketListItem from './components/ticket/GlpiTicketListItem.vue';
+import GlpiFooter from './components/view/GlpiFooter.vue';
 
 import * as glpiService from './js/GLPIService';
 
@@ -34,7 +35,9 @@ const components = {
   'glpi-header': GlpiHeader,
   'glpi-user-connection': GlpiUserConnection,
   'glpi-user-connection-drawer': GlpiUserConnectionDrawer,
-  'glpi-ticket-list': GlpiTicketList
+  'glpi-ticket-list': GlpiTicketList,
+  'glpi-ticket-list-item': GlpiTicketListItem,
+  'glpi-footer': GlpiFooter
 };
 
 for (const key in components) {
