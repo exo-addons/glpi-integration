@@ -27,6 +27,7 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.exoplatform.commons.api.settings.SettingService;
 import org.exoplatform.commons.api.settings.SettingValue;
 import org.exoplatform.commons.api.settings.data.Context;
@@ -211,6 +212,7 @@ public class GLPIServiceImpl implements GLPIService {
       List<GlpiTicket> tickets = new ArrayList<>();
       HttpResponse httpResponse = httpClient.execute(httpGet);
       String responseString = new BasicResponseHandler().handleResponse(httpResponse);
+      EntityUtils.consume(httpResponse.getEntity());
       JSONObject jsonResponse = new JSONObject(responseString);
       JSONArray jsonArray = jsonResponse.getJSONArray("data");
       jsonArray.forEach(object -> {
@@ -219,7 +221,7 @@ public class GLPIServiceImpl implements GLPIService {
         ticket.setId(jsonObject.getLong("Ticket.id"));
         ticket.setTitle(jsonObject.getString("Ticket.name"));
         ticket.setContent(jsonObject.getString("Ticket.content"));
-        ticket.setStatus(TicketStatus.values()[jsonObject.getInt("Ticket.status")]);
+        ticket.setStatus(TicketStatus.values()[jsonObject.getInt("Ticket.status") - 1]);
         ticket.setCreator(getGLPIUserInfo(jsonObject.getLong("Ticket.Ticket_User.User.name"), sessionToken));
         Object comments = jsonObject.get("Ticket.ITILFollowup.content");
         ticket.setComments(!comments.equals(null) ? ((JSONArray) comments).toList() : new ArrayList<>());
@@ -264,6 +266,7 @@ public class GLPIServiceImpl implements GLPIService {
     try {
       HttpResponse httpResponse = httpClient.execute(httpGet);
       String responseString = new BasicResponseHandler().handleResponse(httpResponse);
+      EntityUtils.consume(httpResponse.getEntity());
       JSONObject jsonResponse = new JSONObject(responseString);
       GlpiUser glpiUser = new GlpiUser();
       glpiUser.setId(jsonResponse.getLong("id"));
@@ -314,6 +317,7 @@ public class GLPIServiceImpl implements GLPIService {
       httpTypeRequest.setURI(uri);
       HttpResponse httpResponse = httpClient.execute(httpTypeRequest);
       String responseString = new BasicResponseHandler().handleResponse(httpResponse);
+      EntityUtils.consume(httpResponse.getEntity());
       JSONObject jsonResponse = new JSONObject(responseString);
       return jsonResponse.getString("session_token");
     } catch (HttpResponseException e) {
@@ -339,6 +343,7 @@ public class GLPIServiceImpl implements GLPIService {
     }
     try {
       HttpResponse httpResponse = httpClient.execute(httpGet);
+      EntityUtils.consume(httpResponse.getEntity());
       return httpResponse.getStatusLine().getStatusCode();
     } catch (HttpResponseException e) {
       LOG.error("remote_service={} operation={} parameters=\"session token:{}, status=ko "
