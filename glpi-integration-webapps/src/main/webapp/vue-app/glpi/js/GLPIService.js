@@ -69,3 +69,25 @@ export function saveUserToken(token) {
     }
   });
 }
+
+export function getGLPITickets(offset, limit) {
+  const formData = new FormData();
+  formData.append('offset', offset);
+  if (limit) {
+    formData.append('limit', limit);
+  }
+  const params = new URLSearchParams(formData).toString();
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/v1/glpi-integration/tickets?${params}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then(resp => {
+    if (!resp?.ok) {
+      throw resp;
+    } else {
+      return resp.json();
+    }
+  });
+}
