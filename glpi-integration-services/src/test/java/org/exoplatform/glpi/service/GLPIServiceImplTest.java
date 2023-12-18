@@ -37,6 +37,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.exoplatform.commons.api.settings.SettingService;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -296,10 +297,10 @@ public class GLPIServiceImplTest {
     when(listTicketsHttpResponse.getEntity()).thenReturn(httpEntity);
     when(listTicketsHttpResponse.getStatusLine()).thenReturn(statusLine);
     ENTITY_UTILS.when(() -> EntityUtils.toString(httpEntity))
-                .thenReturn("{data: [{\"Ticket.content\":\"&#60;p&#62;content&#60;/p&#62;\","
-                    + "\"Ticket.solvedate\":null,\"Ticket.date_mod\":\"2023-12-12 09:46:54\","
-                    + "\"Ticket.status\":1,\"Ticket.id\":3,\"Ticket.ITILFollowup.content\":null,"
-                    + "\"Ticket.name\":\"title\",\"Ticket.Ticket_User.User.name\":\"8\"}]}");
+                .thenReturn("{data: [{\"21\":\"content\","
+                    + "\"17\":null,\"19\":\"2023-12-12 09:46:54\","
+                    + "\"12\":1,\"2\":3,\"25\":null,"
+                    + "\"1\":\"title\",\"5\":[\"8\",\"7\"]}]}");
 
     assertNull(glpiService.getGLPITickets(0, 3, "user"));
 
@@ -311,5 +312,38 @@ public class GLPIServiceImplTest {
 
     doThrow(new RuntimeException()).when(this.httpClient).execute(any());
     assertNull(glpiService.getGLPITickets(0, 3, "user"));
+  }
+
+  @Test
+  public void readTicketImageDocument() throws Exception {
+    assertNull(glpiService.readTicketImageDocument(1, "root"));
+    mockGetGLPISettingsAndUserToken();
+
+    HttpResponse initSessionResponse = mock(HttpResponse.class);
+    mockGetValidSessionTokenResponse(initSessionResponse);
+
+    HttpResponse killSessionResponse = mock(HttpResponse.class);
+    mockGetValidKillSessionResponse(initSessionResponse);
+
+    HttpResponse readImageHttpResponse = mock(HttpResponse.class);
+    StatusLine statusLine = mock(StatusLine.class);
+    HttpEntity httpEntity = mock(HttpEntity.class);
+    when(statusLine.getStatusCode()).thenReturn(204);
+    when(readImageHttpResponse.getEntity()).thenReturn(httpEntity);
+    when(readImageHttpResponse.getStatusLine()).thenReturn(statusLine);
+    InputStream inputStream = mock(InputStream.class);
+    when(httpEntity.getContent()).thenReturn(inputStream);
+    when(inputStream.readAllBytes()).thenReturn("test".getBytes());
+
+    assertNull(glpiService.readTicketImageDocument(1L, "user"));
+
+    when(this.httpClient.execute(any())).thenReturn(initSessionResponse, readImageHttpResponse, killSessionResponse);
+    assertNotNull(glpiService.readTicketImageDocument(1L, "user"));
+
+    doThrow(new HttpResponseException(401, "unauthorized")).when(this.httpClient).execute(any());
+    assertNull(glpiService.readTicketImageDocument(1L, "user"));
+
+    doThrow(new RuntimeException()).when(this.httpClient).execute(any());
+    assertNull(glpiService.readTicketImageDocument(1L, "user"));
   }
 }

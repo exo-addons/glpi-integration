@@ -59,6 +59,9 @@ public class EntityBuilder {
     }
     return new GlpiUserEntity(glpiUser.getId(), glpiUser.getName(), glpiUser.getFirstName(), glpiUser.getLastName());
   }
+  public static List<GlpiUserEntity> toGLPIUserEntities(List<GlpiUser> glpiUsers) {
+    return glpiUsers.stream().map(EntityBuilder::toGLPIUserEntity).toList();
+  }
   
   public static GlpiTicketEntity toGLPITicketEntity(GlpiTicket glpiTicket) {
     if (glpiTicket == null) {
@@ -68,7 +71,7 @@ public class EntityBuilder {
                                 glpiTicket.getTitle(),
                                 glpiTicket.getContent(),
                                 glpiTicket.getStatus(),
-                                toGLPIUserEntity(glpiTicket.getCreator()),
+                                toGLPIUserEntities(glpiTicket.getAssignees()),
                                 glpiTicket.getComments(),
                                 glpiTicket.getSolveDate(),
                                 glpiTicket.getLastUpdated());

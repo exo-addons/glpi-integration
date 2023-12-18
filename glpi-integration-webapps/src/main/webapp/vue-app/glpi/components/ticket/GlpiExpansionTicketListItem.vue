@@ -17,35 +17,48 @@
 -->
 
 <template>
-  <div class="d-flex">
-    <v-btn
-      class="btn btn-primary mb-auto mx-auto"
-      color="primary"
-      target="_blank"
-      flat
-      outlined
-      link
-      :href="createTicketLink">
-      <span class="text-capitalize">{{ $t('glpi.ticket.create.label') }}</span>
-    </v-btn>
-  </div>
+  <v-expansion-panel
+    class="px-5">
+    <v-expansion-panel-header
+      class="pa-0">
+      <template #default="{ open }">
+        <v-container class="py-0">
+          <glpi-ticket-list-item
+            :expanded="open"
+            :ticket="ticket"
+            :status-icon="statusIcon" />
+        </v-container>
+      </template>
+      <template #actions>
+        <v-icon
+          class="ms-2 icon-default-color"
+          size="28">
+          $expand
+        </v-icon>
+      </template>
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
+      <glpi-ticket-details
+        :ticket="ticket"
+        :server-url="serverUrl" />
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script>
 export default {
   props: {
-    isConnected: {
-      type: Boolean,
-      default: false
+    ticket: {
+      type: Array,
+      default: () => []
+    },
+    statusIcon: {
+      type: Object,
+      default: () => null
     },
     serverUrl: {
       type: String,
-      default: ''
-    }
-  },
-  computed: {
-    createTicketLink() {
-      return `${this.serverUrl}/front/ticket.form.php`;
+      default: null
     }
   }
 };
