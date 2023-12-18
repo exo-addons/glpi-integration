@@ -22,13 +22,16 @@
       <v-card
         min-width="100%"
         max-width="100%"
-        min-height="400"
+        min-height="200"
         class="d-flex border-box-sizing flex-column pa-5 overflow-hidden position-relative card-border-radius"
-        color="white"
+        :loading="loading"
+        loader-height="2"
         flat>
         <glpi-header
+          v-if="!loading"
           :is-admin="isAdmin"
           :hover="hover"
+          :is-connected="hasValidGLPIUserToken"
           @open-settings-drawer="openSettingsDrawer" />
         <glpi-add-settings
           v-if="!hasGLPISettings"
@@ -37,7 +40,12 @@
           v-else-if="!hasValidGLPIUserToken"
           @open-connection-drawer="openUserConnectionDrawer" />
         <glpi-ticket-list
+          :tickets="tickets.slice(0, maxDisplayTickets)"
           v-else />
+        <glpi-footer
+          v-if="!loading && hasValidGLPIUserToken"
+          :server-url="serverUrl"
+          :is-connected="hasValidGLPIUserToken" />
       </v-card>
     </v-hover>
     <glpi-settings-drawer
@@ -59,28 +67,56 @@ export default {
       isSavingUserToken: false,
       isAdmin: false,
       hasValidUserToken: false,
-      glpiSettings: null
+      glpiSettings: null,
+      tickets: [],
+      pageSize: 9,
+      limit: 0,
+      offset: 0,
+      loading: false,
+      hasMore: false
     };
   },
   beforeCreate() {
     this.$glpiService.getGLPISettings().then(response => {
       this.glpiSettings = response?.glpiSettings;
-      this.hasValidUserToken = response?.hasValidUserToken;
-      this.isAdmin = response?.admin;
+      this.hasValidUserToken = response.hasValidUserToken;
+      this.isAdmin = response.admin;
     });
+  },
+  created() {
+    this.getTickets(0, this.pageSize + 1);
+    this.$root.$emit('load-more-tickets', this.loadMoreTickets);
   },
   computed: {
     showApplication() {
       return this.hasGLPISettings || !this.hasGLPISettings && this.isAdmin;
+    },
+    maxDisplayTickets() {
+      return this.glpiSettings?.maxTicketsToDisplay;
     },
     hasGLPISettings() {
       return !!this.glpiSettings;
     },
     hasValidGLPIUserToken() {
       return this.hasValidUserToken;
+    },
+    serverUrl() {
+      return this.glpiSettings?.serverApiUrl?.replace('apirest.php','');
     }
   },
   methods: {
+    loadMoreTickets() {
+      this.limit = this.limit || this.pageSize;
+      this.offset = this.tickets || 0;
+      this.getTickets(this.offset, this.limit + 1);
+    },
+    getTickets(offset, limit) {
+      this.loading = true;
+      return this.$glpiService.getGLPITickets(offset, limit).then(tickets => {
+        this.tickets.push(...tickets);
+        this.hasMore = tickets?.length > this.limit;
+      }).finally(() => this.loading = false);
+    },
     openSettingsDrawer() {
       this.$root.$emit('open-glpi-settings-drawer', this.glpiSettings);
     },
@@ -105,6 +141,7 @@ export default {
         this.hasValidUserToken = true;
         this.$root.$emit('alert-message', this.$t('glpi.user.token.saved.success.message'), 'success');
         this.$refs.userConnectionDrawer.closeDrawer();
+        this.getTickets(0, 10);
       }).catch((e) => {
         if (e.status === 401) {
           this.$root.$emit('alert-message', this.$t('glpi.user.token.not.valid.message'), 'error');

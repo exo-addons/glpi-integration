@@ -1,4 +1,4 @@
-/*
+<!--
  * Copyright (C) 2023 eXo Platform SAS.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -13,18 +13,40 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+ *
+-->
 
-const path = require('path');
-const { merge } = require('webpack-merge');
+<template>
+  <div class="d-flex">
+    <v-btn
+      class="btn btn-primary mb-auto mx-auto"
+      color="primary"
+      target="_blank"
+      flat
+      outlined
+      link
+      :href="createTicketLink">
+      <span class="text-capitalize">{{ $t('glpi.ticket.create.label') }}</span>
+    </v-btn>
+  </div>
+</template>
 
-const webpackProductionConfig = require('./webpack.prod.js');
-
-module.exports = merge(webpackProductionConfig, {
-    mode: 'development',
-    devtool: 'eval-source-map',
-    output: {
-        path: '/exo-server/webapps/glpi-integration/',
-        filename: 'js/[name].bundle.js'
+<script>
+export default {
+  props: {
+    isConnected: {
+      type: Boolean,
+      default: false
+    },
+    serverUrl: {
+      type: String,
+      default: ''
     }
-});
+  },
+  computed: {
+    createTicketLink() {
+      return `${this.serverUrl}front/ticket.form.php`;
+    }
+  }
+};
+</script>
