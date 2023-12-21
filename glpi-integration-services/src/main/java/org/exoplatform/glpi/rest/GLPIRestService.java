@@ -31,8 +31,7 @@ import org.exoplatform.services.rest.resource.ResourceContainer;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,13 +39,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 
+import java.io.InputStream;
+import java.util.Date;
+
 @Path("/v1/glpi-integration")
 @Tag(name = "/v1/glpi-integration", description = "Manages GLPI Integration")
 public class GLPIRestService implements ResourceContainer {
 
   private static final Log  LOG = ExoLogger.getLogger(GLPIRestService.class);
 
-  private final GLPIService glpiService;
+  private final GLPIService         glpiService;
+
+  private static final int          CACHE_DURATION_SECONDS      = 31536000;
+
+  private static final long         CACHE_DURATION_MILLISECONDS = CACHE_DURATION_SECONDS * 1000L;
+
+  private static final CacheControl ILLUSTRATION_CACHE_CONTROL  = new CacheControl();
 
   public GLPIRestService(GLPIService glpiService) {
     this.glpiService = glpiService;
@@ -141,7 +149,7 @@ public class GLPIRestService implements ResourceContainer {
   public Response getGLPITickets(@Parameter(description = "Ticket list result limit")
                                  @DefaultValue("0") @QueryParam("offset") int offset,
                                  @Parameter(description = "Ticket list result offset")
-                                 @DefaultValue("10") @QueryParam("limit") int limit) {
+                                 @DefaultValue("9") @QueryParam("limit") int limit) {
     Identity identity = ConversationState.getCurrent().getIdentity();
     try {
       return Response.ok(EntityBuilder.toGLPITicketListEntity(glpiService.getGLPITickets(offset, limit, identity.getUserId())))
@@ -149,6 +157,45 @@ public class GLPIRestService implements ResourceContainer {
     } catch (Exception e) {
       LOG.error("Error while getting GLPI tickets", e);
       return Response.serverError().entity(e.getMessage()).build();
+    }
+  }
+
+  @GET
+  @Path( "/image/{docId}")
+  @RolesAllowed("users")
+  @Operation(
+          summary = "Gets a GLPI ticket document image by its id",
+          description = "Gets a GLPI ticket document image by its id",
+          method = "GET")
+  @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Request fulfilled"),
+          @ApiResponse(responseCode = "500", description = "Internal server error"),
+          @ApiResponse(responseCode = "400", description = "Invalid query input"),
+          @ApiResponse(responseCode = "404", description = "Resource not found") })
+  public Response getImageIllustration(@Context Request request,
+                                       @Parameter(description = "workflow id", required = true) @PathParam("docId") Long docId,
+                                       @Parameter(description = "Last modified parameter") @QueryParam("v") long lastModified) {
+
+    if (docId == null) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("Image doc id is mandatory").build();
+    }
+    Identity identity = ConversationState.getCurrent().getIdentity();
+    try {
+      EntityTag eTag = new EntityTag(String.valueOf(lastModified), true);
+      Response.ResponseBuilder builder = request.evaluatePreconditions(eTag);
+      if (builder == null) {
+        InputStream inputStream = glpiService.readTicketImageDocument(docId, identity.getUserId());
+        builder = Response.ok(inputStream, "image/png");
+        builder.tag(eTag);
+        if (lastModified > 0) {
+          builder.lastModified(new Date(lastModified));
+          builder.expires(new Date(System.currentTimeMillis() + CACHE_DURATION_MILLISECONDS));
+          builder.cacheControl(ILLUSTRATION_CACHE_CONTROL);
+        }
+      }
+      return builder.build();
+    } catch (Exception e) {
+      LOG.error("An error occurred while getting GLPI ticket document image", e);
+      return Response.serverError().build();
     }
   }
 }

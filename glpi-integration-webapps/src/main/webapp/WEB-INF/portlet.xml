@@ -30,7 +30,7 @@
         </init-param>
         <init-param>
             <name>preload.resource.rest</name>
-            <value><![CDATA[/portal/rest/v1/glpi-integration/tickets?offset=0&limit=10]]></value>
+            <value><![CDATA[/portal/rest/v1/glpi-integration/tickets?offset=0&limit=9]]></value>
         </init-param>
         <expiration-cache>-1</expiration-cache>
         <cache-scope>PUBLIC</cache-scope>
