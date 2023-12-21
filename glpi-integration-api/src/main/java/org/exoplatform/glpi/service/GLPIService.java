@@ -20,6 +20,7 @@ package org.exoplatform.glpi.service;
 import org.exoplatform.glpi.model.GLPISettings;
 import org.exoplatform.glpi.model.GlpiTicket;
 
+import java.io.InputStream;
 import java.util.List;
 
 public interface GLPIService {
@@ -78,4 +79,13 @@ public interface GLPIService {
    * @return {@link List} of {@link GlpiTicket}
    */
   List<GlpiTicket> getGLPITickets(int offset, int limit, String userIdentityId);
+
+  /**
+   * Read GLPI ticket document image
+   *
+   * @param imageId image id
+   * @param userIdentityId user identity id
+   * @return {@link InputStream}
+   */
+  InputStream readTicketImageDocument(long imageId, String userIdentityId);
 }

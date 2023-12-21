@@ -28,19 +28,19 @@ import java.util.List;
 @NoArgsConstructor
 public class GlpiTicket {
 
-  private long         id;
+  private long           id;
 
-  private String       title;
+  private String         title;
 
-  private String       content;
+  private String         content;
 
-  private TicketStatus status;
+  private TicketStatus   status;
 
-  private GlpiUser     creator;
+  private List<GlpiUser> assignees;
 
-  private List<Object> comments;
+  private List<Object>   comments;
 
-  private String       solveDate;
+  private String         solveDate;
 
-  private String       lastUpdated;
+  private String         lastUpdated;
 }

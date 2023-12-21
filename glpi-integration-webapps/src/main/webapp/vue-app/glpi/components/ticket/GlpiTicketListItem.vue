@@ -18,11 +18,11 @@
 
 <template>
   <v-row
-    class="clickable">
-    <v-col>
+    class="clickable text-color">
+    <v-col class="px-0 py-2">
       <v-row
         no-gutters>
-        <v-col class="pa-0">
+        <v-col class="py-1">
           <p class="mb-0 text-truncate">
             <span class="me-3">
               {{ ticket.id }}
@@ -35,12 +35,12 @@
             {{ $t(`glpi.ticket.status.${ticket.status}.label`) }}
           </p>
         </v-col>
-      </v-row>
-      <v-row>
         <v-col
           cols="12"
           class="pa-0">
-          <p class="text-truncate-2 mb-0 align-center">
+          <p
+            v-if="!expanded"
+            class="text-truncate-2 body-2 mb-0">
             {{ ticket.title }}
           </p>
         </v-col>
@@ -56,11 +56,14 @@ export default {
       type: Object,
       default: null
     },
+    statusIcon: {
+      type: Object,
+      default: null
+    },
+    expanded: {
+      type: Boolean,
+      default: false
+    },
   },
-  computed: {
-    statusIcon() {
-      return this.$parent.statusIcons.get(this.ticket?.status);
-    }
-  }
 };
 </script>

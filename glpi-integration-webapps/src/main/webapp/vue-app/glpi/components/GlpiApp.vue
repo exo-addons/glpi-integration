@@ -32,7 +32,8 @@
           :is-admin="isAdmin"
           :hover="hover"
           :is-connected="hasValidGLPIUserToken"
-          @open-settings-drawer="openSettingsDrawer" />
+          @open-settings-drawer="openSettingsDrawer"
+          @open-list-ticket-drawer="openListTicketsDrawer" />
         <glpi-add-settings
           v-if="!hasGLPISettings"
           @open-settings-drawer="openSettingsDrawer" />
@@ -56,6 +57,13 @@
       :is-saving-token="isSavingUserToken"
       ref="userConnectionDrawer"
       @save-glpi-user-token="saveUserToken" />
+    <glpi-list-ticket-darwer
+      :tickets="tickets"
+      :has-more="hasMore"
+      :server-url="serverUrl"
+      :loading="loading"
+      ref="listTicketDrawer"
+      @load-more-tickets="loadMoreTickets" />
   </v-app>
 </template>
 
@@ -69,7 +77,7 @@ export default {
       hasValidUserToken: false,
       glpiSettings: null,
       tickets: [],
-      pageSize: 9,
+      pageSize: 8,
       limit: 0,
       offset: 0,
       loading: false,
@@ -84,8 +92,7 @@ export default {
     });
   },
   created() {
-    this.getTickets(0, this.pageSize + 1);
-    this.$root.$emit('load-more-tickets', this.loadMoreTickets);
+    this.getTickets(0, this.pageSize);
   },
   computed: {
     showApplication() {
@@ -101,20 +108,24 @@ export default {
       return this.hasValidUserToken;
     },
     serverUrl() {
-      return this.glpiSettings?.serverApiUrl?.replace('apirest.php','');
+      return this.glpiSettings?.serverApiUrl?.replace('/apirest.php','');
     }
   },
   methods: {
+    openListTicketsDrawer() {
+      this.$root.$emit('open-list-ticket-drawer');
+    },
     loadMoreTickets() {
+      this.offset = this.tickets.length || 0;
       this.limit = this.limit || this.pageSize;
-      this.offset = this.tickets || 0;
-      this.getTickets(this.offset, this.limit + 1);
+      this.limit+= this.offset;
+      this.getTickets(this.offset, this.limit);
     },
     getTickets(offset, limit) {
       this.loading = true;
-      return this.$glpiService.getGLPITickets(offset, limit).then(tickets => {
+      return this.$glpiService.getGLPITickets(offset, limit + 1).then(tickets => {
         this.tickets.push(...tickets);
-        this.hasMore = tickets?.length > this.limit;
+        this.hasMore = tickets?.length > this.limit - this.offset;
       }).finally(() => this.loading = false);
     },
     openSettingsDrawer() {
@@ -141,7 +152,7 @@ export default {
         this.hasValidUserToken = true;
         this.$root.$emit('alert-message', this.$t('glpi.user.token.saved.success.message'), 'success');
         this.$refs.userConnectionDrawer.closeDrawer();
-        this.getTickets(0, 10);
+        this.getTickets(0, this.pageSize);
       }).catch((e) => {
         if (e.status === 401) {
           this.$root.$emit('alert-message', this.$t('glpi.user.token.not.valid.message'), 'error');
