@@ -43,6 +43,8 @@ import org.exoplatform.services.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
@@ -73,7 +75,7 @@ public class GLPIServiceImpl implements GLPIService {
   private static final int     DEFAULT_POOL_CONNECTION                          = 100;
 
   private static final String  SEARCH_TICKET_CRITERIA                           =
-                                                      "&uid_cols=true&sort[]=19&order[]=DESC&is_deleted=0&criteria[0][link]=AND"
+                                                      "&sort[]=19&order[]=DESC&is_deleted=0&criteria[0][link]=AND"
                                                           + "&criteria[0][field]=4&criteria[0][searchtype]=equals&criteria[0][value]=myself&criteria[1][link]=AND&criteria[1][criteria][0][link]=AND%20NOT"
                                                           + "&criteria[1][criteria][0][field]=12&criteria[1][criteria][0][searchtype]=equals&criteria[1][criteria][0][value]=6"
                                                           + "&criteria[1][criteria][2][link]=OR&criteria[1][criteria][2][criteria][0][link]=AND&criteria[1][criteria][2][criteria][0][field]=12"
@@ -218,16 +220,18 @@ public class GLPIServiceImpl implements GLPIService {
       jsonArray.forEach(object -> {
         GlpiTicket ticket = new GlpiTicket();
         JSONObject jsonObject = (JSONObject) object;
-        ticket.setId(jsonObject.getLong("Ticket.id"));
-        ticket.setTitle(jsonObject.getString("Ticket.name"));
-        ticket.setContent(jsonObject.getString("Ticket.content"));
-        ticket.setStatus(TicketStatus.values()[jsonObject.getInt("Ticket.status") - 1]);
-        ticket.setCreator(getGLPIUserInfo(jsonObject.getLong("Ticket.Ticket_User.User.name"), sessionToken));
-        Object comments = jsonObject.get("Ticket.ITILFollowup.content");
+        ticket.setId(jsonObject.getLong("2")); // Ticket.id
+        ticket.setTitle(jsonObject.getString("1")); // Ticket.name
+        ticket.setContent(jsonObject.getString("21")); // Ticket.content
+        ticket.setStatus(TicketStatus.values()[jsonObject.getInt("12") - 1]); // Ticket.status
+        Object assignees = jsonObject.get("5"); //Ticket.Ticket_User.User.name
+        ticket.setAssignees(assignees != null && !assignees.equals(null) ? getGLPIUsersInfo(assignees, sessionToken)
+                                                                         : new ArrayList<>());
+        Object comments = jsonObject.get("25");
         ticket.setComments(!comments.equals(null) ? ((JSONArray) comments).toList() : new ArrayList<>());
-        Object solveDate = jsonObject.get("Ticket.solvedate");
+        Object solveDate = jsonObject.get("17"); // Ticket.solvedate
         ticket.setSolveDate(solveDate != null ? String.valueOf(solveDate) : null);
-        ticket.setLastUpdated(jsonObject.getString("Ticket.date_mod"));
+        ticket.setLastUpdated(jsonObject.getString("19")); // Ticket.date_mod
         tickets.add(ticket);
       });
       return tickets;
@@ -256,7 +260,20 @@ public class GLPIServiceImpl implements GLPIService {
     }
     return GLPI_SETTINGS;
   }
-  
+
+  private List<GlpiUser> getGLPIUsersInfo(Object assignees, String sessionToken) {
+    List<GlpiUser> GLPIUsers = new ArrayList<>();
+    if (assignees instanceof String) {
+      GLPIUsers.add(getGLPIUserInfo(Long.parseLong((String) assignees), sessionToken));
+    } else {
+      ((JSONArray) assignees).forEach(object -> {
+        String glpiUserId = (String) object;
+        GLPIUsers.add(getGLPIUserInfo(Long.parseLong(glpiUserId), sessionToken));
+      });
+    }
+    return GLPIUsers;
+  }
+
   private GlpiUser getGLPIUserInfo(long glpiUserId, String sessionToken) {
     long startTime = System.currentTimeMillis();
     HttpGet httpGet = initHttpGet("/User/" + glpiUserId, sessionToken);
@@ -302,6 +319,40 @@ public class GLPIServiceImpl implements GLPIService {
     httpTypeRequest.setHeader("App-Token", glpiSettings.getAppToken());
     return httpTypeRequest;
   }
+
+  @Override
+  public InputStream readTicketImageDocument(long imageId, String userIdentityId) {
+    long startTime = System.currentTimeMillis();
+    String sessionToken = initSession(getUserToken(userIdentityId));
+    HttpGet httpGet = initHttpGet("/Document/" + imageId + "?alt=media", sessionToken);
+    if (httpGet == null) {
+      return null;
+    }
+    try {
+      httpGet.setHeader("Accept", "application/octet-stream");
+      HttpResponse httpResponse = httpClient.execute(httpGet);
+      byte[] content = httpResponse.getEntity().getContent().readAllBytes();
+      InputStream imageContent = new ByteArrayInputStream(content);
+      EntityUtils.consume(httpResponse.getEntity());
+      return imageContent;
+    } catch (HttpResponseException e) {
+      LOG.error("remote_service={} operation={} parameters=\"imageId:{}, sessionToken:{}, status=ko "
+                      + "duration_ms={} error_msg=\"{}, status : {} \"",
+              GLPI_SERVICE_API,
+              "getGLPIUser",
+              imageId,
+              sessionToken,
+              System.currentTimeMillis() - startTime,
+              e.getReasonPhrase(),
+              e.getStatusCode());
+    } catch (Exception e) {
+      LOG.error("Error while reading GLPI ticket image document", e);
+    } finally {
+      killSession(sessionToken);
+    }
+    return null;
+  }
+
 
   private String initSession(String userToken) {
     long startTime = System.currentTimeMillis();

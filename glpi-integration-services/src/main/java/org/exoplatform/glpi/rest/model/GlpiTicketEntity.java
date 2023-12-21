@@ -30,19 +30,19 @@ import java.util.List;
 @NoArgsConstructor
 public class GlpiTicketEntity implements Serializable {
 
-  private long           id;
+  private long                 id;
 
-  private String         title;
+  private String               title;
 
-  private String         content;
+  private String               content;
 
-  private TicketStatus   status;
+  private TicketStatus         status;
 
-  private GlpiUserEntity creator;
+  private List<GlpiUserEntity> assignees;
 
-  private List<Object>   comments;
+  private List<Object>         comments;
 
-  private String         solveDate;
+  private String               solveDate;
 
-  private String         lastUpdated;
+  private String               lastUpdated;
 }

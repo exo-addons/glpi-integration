@@ -17,24 +17,14 @@
 -->
 
 <template>
-  <div class="my-auto">
-    <v-container
-      v-if="tickets.length">
-      <glpi-ticket-list-item
-        v-for="ticket in tickets"
-        :key="ticket.id"
-        :ticket="ticket"
-        :status-icon="statusIcons.get(ticket?.status)" />
-    </v-container>
-    <div
-      v-else
-      class="align-center">
-      <v-progress-circular
-        class="mx-auto"
-        indeterminate
-        color="primary" />
-    </div>
-  </div>
+  <v-expansion-panels accordion>
+    <glpi-expansion-ticket-list-item
+      v-for="ticket in tickets"
+      :key="ticket.id"
+      :ticket="ticket"
+      :server-url="serverUrl"
+      :status-icon="statusIcons.get(ticket?.status)" />
+  </v-expansion-panels>
 </template>
 
 <script>
@@ -43,6 +33,10 @@ export default {
     tickets: {
       type: Array,
       default: () => []
+    },
+    serverUrl: {
+      type: String,
+      default: null
     }
   },
   data() {
@@ -58,4 +52,4 @@ export default {
     };
   }
 };
-</script>
+</script>>

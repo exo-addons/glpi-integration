@@ -22,7 +22,7 @@
       {{ $t('glpi.settings.last.requests.label') }}
     </p>
     <div
-      v-if="canSeeAll && hover"
+      v-if="canSeeAll && (hover || isMobile)"
       class="mt-auto ms-auto">
       <v-btn
         class="pa-1 body-2"
@@ -98,6 +98,9 @@ export default {
     canSeeAll() {
       return this.isConnected && this.showSeeAll;
     },
+    isMobile() {
+      return this.$vuetify.breakpoint.name === 'xs' || this.$vuetify.breakpoint.name === 'sm';
+    },
   },
   methods: {
     openListTicketDrawer() {
@@ -107,6 +110,10 @@ export default {
       this.$emit('open-settings-drawer');
     },
     seeAll() {
+      if (!this.isAdmin) {
+        this.openListTicketDrawer();
+        return;
+      }
       this.showMenu = true;
     }
   }

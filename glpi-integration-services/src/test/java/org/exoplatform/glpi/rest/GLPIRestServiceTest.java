@@ -34,8 +34,11 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -112,11 +115,13 @@ public class GLPIRestServiceTest {
 
   @Test
   public void getGLPITickets() {
+    ArrayList<GlpiUser> glpiUsers = new ArrayList<>();
+    glpiUsers.add(new GlpiUser(1L, "user", "first", "last"));
     GlpiTicket glpiTicket = new GlpiTicket(1L,
                                            "title",
                                            "content",
                                            TicketStatus.NEW,
-                                           new GlpiUser(1L, "user", "first", "last"),
+                                           glpiUsers,
                                            new ArrayList<>(),
                                            "solveDate",
                                            "lastUpdate");
@@ -128,6 +133,21 @@ public class GLPIRestServiceTest {
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     doThrow(new RuntimeException()).when(glpiService).getGLPITickets(0, 10, "user");
     response = glpiRestService.getGLPITickets(0, 10);
+    assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+  }
+
+  @Test
+  public void getImageIllustration() {
+    Request request = mock(Request.class);
+    when(identity.getUserId()).thenReturn("user");
+    Response response = glpiRestService.getImageIllustration(request, null, 12345679L);
+    assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    when(request.evaluatePreconditions(any(EntityTag.class))).thenReturn(null);
+    when(glpiService.readTicketImageDocument(1L, "user")).thenReturn(new ByteArrayInputStream("test".getBytes()));
+    response = glpiRestService.getImageIllustration(request, 1L, 12345679L);
+    assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    doThrow(new RuntimeException()).when(glpiService).readTicketImageDocument(1L, "user");
+    response = glpiRestService.getImageIllustration(request, 1L, 12345679L);
     assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
   }
 }
