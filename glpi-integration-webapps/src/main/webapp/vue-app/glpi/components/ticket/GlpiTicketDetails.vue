@@ -146,7 +146,7 @@ export default {
       return assignee.firstName !== 'null' && assignee.lastName !== 'null'
                                            && `${assignee.firstName} ${assignee.lastName}` || assignee.name;
     },
-    updateImagesURls(img) {
+    updateImagesURl(img) {
       const imgURl = img.getAttribute('src');
       const docId = new URLSearchParams(imgURl.substring(imgURl.indexOf('?') + 1)).get('docid');
       img.setAttribute('src', `${this.imgBaseUrl}${docId}?v=${this.lastUpdatedTime}`);
@@ -157,7 +157,7 @@ export default {
       element.innerHTML = html;
       wrapper.innerHTML = element.value;
       wrapper.querySelectorAll('img').forEach(img => {
-        this.updateImagesURls(img);
+        this.updateImagesURl(img);
         const href = img.parentNode.getAttribute('href');
         img.parentNode.setAttribute('href',this.serverUrl + href);
       });

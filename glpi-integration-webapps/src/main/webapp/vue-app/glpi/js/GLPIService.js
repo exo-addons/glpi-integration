@@ -91,3 +91,16 @@ export function getGLPITickets(offset, limit) {
     }
   });
 }
+
+export function removeUserToken() {
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/v1/glpi-integration/token`, {
+    method: 'DELETE',
+    credentials: 'include',
+  }).then(resp => {
+    if (!resp?.ok) {
+      throw resp;
+    } else {
+      return resp.text();
+    }
+  });
+}
