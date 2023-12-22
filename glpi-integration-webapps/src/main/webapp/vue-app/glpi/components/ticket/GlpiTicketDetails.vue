@@ -88,6 +88,20 @@
         </div>
       </div>
     </div>
+    <div class="d-flex ma-auto">
+      <v-btn
+        class="btn btn-primary mb-auto mx-auto"
+        color="primary"
+        target="_blank"
+        flat
+        outlined
+        link
+        :href="openTicketLink">
+        <span class="text-capitalize-first-letter">
+          {{ $t('glpi.ticket.open.message') }}
+        </span>
+      </v-btn>
+    </div>
   </div>
 </template>
 
@@ -122,6 +136,9 @@ export default {
     },
     lastUpdatedTime() {
       return this.ticket && new Date(this.ticket?.lastUpdated).getTime();
+    },
+    openTicketLink() {
+      return this.ticket && `${this.serverUrl}/front/ticket.form.php?id=${this.ticket.id}`;
     },
   },
   methods: {

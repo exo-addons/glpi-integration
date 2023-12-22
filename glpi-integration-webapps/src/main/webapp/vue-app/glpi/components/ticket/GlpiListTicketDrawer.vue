@@ -34,7 +34,7 @@
     <template
       v-if="hasMore"
       slot="footer">
-      <div class="ma-auto d-flex width-fit-content">
+      <div class="ma-auto d-flex width-full">
         <v-btn
           :loading="loading"
           class="btn btn-primary width-full"
