@@ -198,4 +198,23 @@ public class GLPIRestService implements ResourceContainer {
       return Response.serverError().build();
     }
   }
+
+  @DELETE
+  @Produces(MediaType.APPLICATION_JSON)
+  @RolesAllowed("users")
+  @Path("/token")
+  @Operation(summary = "Remove GLPI user token", description = "Remove GLPI user token", method = "DELETE")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "204", description = "Request fulfilled"),
+          @ApiResponse(responseCode = "500", description = "Internal server error"),})
+  public Response removeGLPIUserToken() {
+    Identity identity = ConversationState.getCurrent().getIdentity();
+    try {
+      glpiService.removeUserToken(identity.getUserId());
+      return Response.noContent().build();
+    } catch (Exception e) {
+      LOG.error("Error while saving GLPI user token", e);
+      return Response.serverError().entity(e.getMessage()).build();
+    }
+  }
 }

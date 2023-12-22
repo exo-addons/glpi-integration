@@ -346,4 +346,13 @@ public class GLPIServiceImplTest {
     doThrow(new RuntimeException()).when(this.httpClient).execute(any());
     assertNull(glpiService.readTicketImageDocument(1L, "user"));
   }
+
+  @Test
+  public void removeUserToken() {
+    Throwable exception = assertThrows(IllegalArgumentException.class, () -> glpiService.removeUserToken(null));
+    assertEquals("user identity id is mandatory", exception.getMessage());
+    glpiService.removeUserToken("user");
+    verify(settingService, times(1)).remove(any(), any(), anyString());
+  }
+
 }
