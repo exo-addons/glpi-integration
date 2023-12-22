@@ -88,4 +88,11 @@ public interface GLPIService {
    * @return {@link InputStream}
    */
   InputStream readTicketImageDocument(long imageId, String userIdentityId);
+
+  /**
+   * Removes saved user GLPI token
+   *
+   * @param userIdentityId user identity id
+   */
+  void removeUserToken(String userIdentityId);
 }

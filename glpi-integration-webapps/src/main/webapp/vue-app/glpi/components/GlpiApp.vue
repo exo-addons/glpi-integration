@@ -58,11 +58,12 @@
       ref="userConnectionDrawer"
       @save-glpi-user-token="saveUserToken" />
     <glpi-list-ticket-darwer
+      ref="listTicketDrawer"
       :tickets="tickets"
       :has-more="hasMore"
       :server-url="serverUrl"
       :loading="loading"
-      ref="listTicketDrawer"
+      @disconnect-user="removeUserToken"
       @load-more-tickets="loadMoreTickets" />
   </v-app>
 </template>
@@ -73,6 +74,7 @@ export default {
     return {
       isSavingSettings: false,
       isSavingUserToken: false,
+      isRemovingUserToken: true,
       isAdmin: false,
       hasValidUserToken: false,
       glpiSettings: null,
@@ -90,6 +92,15 @@ export default {
       this.hasValidUserToken = response.hasValidUserToken;
       this.isAdmin = response.admin;
     });
+  },
+  watch: {
+    isRemovingUserToken() {
+      if (this.isRemovingUserToken) {
+        this.$refs.listTicketDrawer.startLoading();
+      } else {
+        this.$refs.listTicketDrawer.endLoading();
+      }
+    }
   },
   created() {
     this.getTickets(0, this.pageSize);
@@ -161,6 +172,15 @@ export default {
         }
       }).finally(() => {
         this.isSavingUserToken = false;
+      });
+    },
+    removeUserToken() {
+      this.isRemovingUserToken = true;
+      return this.$glpiService.removeUserToken().then(() => {
+        this.hasValidUserToken = false;
+      }).finally(() => {
+        this.isRemovingUserToken = false;
+        this.$refs.listTicketDrawer.closeDrawer();
       });
     }
   }
