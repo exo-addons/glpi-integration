@@ -22,9 +22,54 @@
     allow-expand
     right>
     <template slot="title">
-      <span class="text-color">
+      <span class="text-color mt-1">
         {{ $t('glpi.my.ticket.list.label') }}
       </span>
+    </template>
+    <template slot="titleIcons">
+      <div class="d-flex">
+        <v-btn
+          target="_blank"
+          flat
+          outlined
+          icon
+          :href="createTicketLink">
+          <v-icon
+            class="icon-default-color icon-default-size"
+            link
+            :size="18">
+            fas fa-plus
+          </v-icon>
+        </v-btn>
+        <v-menu
+          v-model="menu"
+          transition="slide-x-reverse-transition"
+          offset-y>
+          <template #activator="{ on, attrs }">
+            <v-btn
+              icon
+              v-bind="attrs"
+              v-on="on">
+              <v-icon
+                class="icon-default-color icon-default-size"
+                :size="18">
+                fas fa-ellipsis-v
+              </v-icon>
+            </v-btn>
+          </template>
+          <v-list
+            class="pa-0"
+            dense>
+            <v-list-item
+              @click="disconnect">
+              <v-list-item-title
+                class="subtitle-2">
+                {{ $t('glpi.user.disconnect.label') }}
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
     </template>
     <template slot="content">
       <glpi-expansion-list-ticket
@@ -50,6 +95,11 @@
 
 <script>
 export default {
+  data() {
+    return {
+      menu: false
+    };
+  },
   props: {
     loading: {
       type: Boolean,
@@ -70,6 +120,12 @@ export default {
   },
   created() {
     this.$root.$on('open-list-ticket-drawer', this.openDrawer);
+    document.addEventListener('mousedown',this.closeMenu, false);
+  },
+  computed: {
+    createTicketLink() {
+      return `${this.serverUrl}/front/ticket.form.php`;
+    }
   },
   methods: {
     loadMoreTickets() {
@@ -77,6 +133,19 @@ export default {
     },
     openDrawer() {
       this.$refs.glpiListTicketDrawer.open();
+    },
+    closeDrawer() {
+      this.$refs.glpiListTicketDrawer.close();
+    },
+    disconnect() {
+      this.$emit('disconnect-user');
+    },
+    closeMenu() {
+      if (this.menu) {
+        setTimeout(() => {
+          this.menu = false;
+        }, 200);
+      }
     }
   }
 };

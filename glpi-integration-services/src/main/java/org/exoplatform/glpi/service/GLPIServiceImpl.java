@@ -17,8 +17,16 @@
 
 package org.exoplatform.glpi.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -33,22 +41,13 @@ import org.exoplatform.commons.api.settings.SettingValue;
 import org.exoplatform.commons.api.settings.data.Context;
 import org.exoplatform.commons.api.settings.data.Scope;
 import org.exoplatform.glpi.model.GLPISettings;
-
-import org.apache.http.client.HttpClient;
-import org.exoplatform.glpi.model.GlpiUser;
 import org.exoplatform.glpi.model.GlpiTicket;
+import org.exoplatform.glpi.model.GlpiUser;
 import org.exoplatform.glpi.model.TicketStatus;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GLPIServiceImpl implements GLPIService {
 
@@ -365,6 +364,18 @@ public class GLPIServiceImpl implements GLPIService {
     return null;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void removeUserToken(String userIdentityId) {
+    if (userIdentityId == null) {
+      throw new IllegalArgumentException("user identity id is mandatory");
+    }
+    settingService.remove(Context.USER.id(userIdentityId),
+            GLPI_INTEGRATION_SETTING_SCOPE,
+            GLPI_USER_TOKEN_SETTING_KEY);
+  }
 
   private String initSession(String userToken) {
     long startTime = System.currentTimeMillis();

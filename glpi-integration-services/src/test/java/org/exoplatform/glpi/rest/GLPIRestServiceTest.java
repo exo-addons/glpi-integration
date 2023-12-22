@@ -150,4 +150,14 @@ public class GLPIRestServiceTest {
     response = glpiRestService.getImageIllustration(request, 1L, 12345679L);
     assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
   }
+
+  @Test
+  public void removeGLPIUserToken() {
+    when(identity.getUserId()).thenReturn("user");
+    Response response = glpiRestService.removeGLPIUserToken();
+    assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+    doThrow(new RuntimeException()).when(glpiService).removeUserToken("user");
+    response = glpiRestService.removeGLPIUserToken();
+    assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+  }
 }
