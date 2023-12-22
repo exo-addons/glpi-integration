@@ -228,7 +228,7 @@ public class GLPIServiceImpl implements GLPIService {
         ticket.setAssignees(assignees != null && !assignees.equals(null) ? getGLPIUsersInfo(assignees, sessionToken)
                                                                          : new ArrayList<>());
         Object comments = jsonObject.get("25");
-        ticket.setComments(!comments.equals(null) ? ((JSONArray) comments).toList() : new ArrayList<>());
+        ticket.setComments(parseComments(comments));
         Object solveDate = jsonObject.get("17"); // Ticket.solvedate
         ticket.setSolveDate(solveDate != null ? String.valueOf(solveDate) : null);
         ticket.setLastUpdated(jsonObject.getString("19")); // Ticket.date_mod
@@ -252,6 +252,18 @@ public class GLPIServiceImpl implements GLPIService {
       killSession(sessionToken);
     }
     return null;
+  }
+
+  private List<Object> parseComments(Object comments) {
+    List<Object> commentList = new ArrayList<>();
+    if (comments.equals(null)) {
+      return commentList;
+    } else if (comments instanceof String) {
+      commentList.add(comments);
+    } else {
+      commentList = ((JSONArray) comments).toList();
+    }
+    return commentList;
   }
 
   private GLPISettings getCurrentGLPISettings() {
