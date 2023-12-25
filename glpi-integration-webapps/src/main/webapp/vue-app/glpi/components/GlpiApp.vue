@@ -18,37 +18,35 @@
 
 <template>
   <v-app v-if="showApplication">
-    <v-hover v-slot="{ hover }">
-      <v-card
-        min-width="100%"
-        max-width="100%"
-        min-height="200"
-        class="d-flex border-box-sizing flex-column pa-5 overflow-hidden position-relative card-border-radius"
-        :loading="loading"
-        loader-height="2"
-        flat>
-        <glpi-header
-          v-if="!loading"
-          :is-admin="isAdmin"
-          :hover="hover"
-          :is-connected="hasValidGLPIUserToken"
-          @open-settings-drawer="openSettingsDrawer"
-          @open-list-ticket-drawer="openListTicketsDrawer" />
-        <glpi-add-settings
-          v-if="!hasGLPISettings"
-          @open-settings-drawer="openSettingsDrawer" />
-        <glpi-user-connection
-          v-else-if="!hasValidGLPIUserToken"
-          @open-connection-drawer="openUserConnectionDrawer" />
-        <glpi-ticket-list
-          :tickets="tickets.slice(0, maxDisplayTickets)"
-          v-else />
-        <glpi-footer
-          v-if="!loading && hasValidGLPIUserToken"
-          :server-url="serverUrl"
-          :is-connected="hasValidGLPIUserToken" />
-      </v-card>
-    </v-hover>
+    <v-card
+      min-width="100%"
+      max-width="100%"
+      min-height="200"
+      class="d-flex border-box-sizing flex-column pa-5 overflow-hidden position-relative card-border-radius"
+      :loading="loading"
+      loader-height="2"
+      flat>
+      <glpi-header
+        v-if="!loading"
+        :is-admin="isAdmin"
+        :is-connected="hasValidGLPIUserToken"
+        @open-settings-drawer="openSettingsDrawer"
+        @open-list-ticket-drawer="openListTicketsDrawer" />
+      <glpi-add-settings
+        v-if="!hasGLPISettings"
+        @open-settings-drawer="openSettingsDrawer" />
+      <glpi-user-connection
+        v-else-if="!hasValidGLPIUserToken"
+        @open-connection-drawer="openUserConnectionDrawer" />
+      <glpi-ticket-list
+        v-else
+        :tickets="tickets.slice(0, maxDisplayTickets)"
+        :loading="loading" />
+      <glpi-footer
+        v-if="!loading && hasValidGLPIUserToken"
+        :server-url="serverUrl"
+        :is-connected="hasValidGLPIUserToken" />
+    </v-card>
     <glpi-settings-drawer
       :is-saving-settings="isSavingSettings"
       ref="settingsDrawer"

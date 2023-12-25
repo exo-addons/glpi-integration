@@ -22,20 +22,26 @@
       {{ $t('glpi.settings.last.requests.label') }}
     </p>
     <div
-      v-if="canSeeAll && (hover || isMobile)"
+      v-if="canSeeAll"
       class="mt-auto ms-auto">
       <v-btn
         class="pa-1 body-2"
         color="primary"
         small
         text
-        @click="seeAll">
+        @click="seeAll"
+        @mouseover="showAdminControls"
+        @focusin="showAdminControls">
         {{ $t('glpi.settings.see.all.label') }}
       </v-btn>
     </div>
     <div
       v-if="canEditAdminConfig && isAdmin"
-      class="ms-auto d-flex">
+      role="button"
+      tabIndex="0"
+      class="ms-auto d-flex"
+      @mouseleave="hideAdminControls"
+      @focusout="hideAdminControls">
       <v-btn
         class="ms-auto me-0 my-0 pt-1 icon-default-color"
         small
@@ -64,7 +70,8 @@
 export default {
   data() {
     return {
-      showMenu: false
+      showMenu: false,
+      hover: false
     };
   },
   props: {
@@ -72,20 +79,9 @@ export default {
       type: Boolean,
       default: false
     },
-    hover: {
-      type: Boolean,
-      default: false,
-    },
     isConnected: {
       type: Boolean,
       default: false,
-    }
-  },
-  watch: {
-    hover() {
-      if (!this.hover) {
-        this.showMenu = false;
-      }
     }
   },
   computed: {
@@ -108,6 +104,15 @@ export default {
     },
     openSettingsDrawer() {
       this.$emit('open-settings-drawer');
+    },
+    showAdminControls() {
+      if (this.isMobile || !this.isAdmin) {
+        return;
+      }
+      this.seeAll();
+    },
+    hideAdminControls() {
+      this.showMenu = false;
     },
     seeAll() {
       if (!this.isAdmin) {
