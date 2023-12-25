@@ -213,7 +213,7 @@ public class GLPIRestService implements ResourceContainer {
       glpiService.removeUserToken(identity.getUserId());
       return Response.noContent().build();
     } catch (Exception e) {
-      LOG.error("Error while saving GLPI user token", e);
+      LOG.error("Error while removing GLPI user token", e);
       return Response.serverError().entity(e.getMessage()).build();
     }
   }

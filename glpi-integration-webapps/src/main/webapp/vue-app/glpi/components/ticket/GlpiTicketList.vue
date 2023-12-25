@@ -19,12 +19,13 @@
 <template>
   <div class="my-auto">
     <v-container
-      v-if="tickets.length">
+      v-if="!loading">
       <glpi-ticket-list-item
-        v-for="ticket in tickets"
+        v-for="(ticket, index) in tickets"
         :key="ticket.id"
         :ticket="ticket"
-        :status-icon="statusIcons.get(ticket?.status)" />
+        :status-icon="statusIcons.get(ticket?.status)"
+        :index="index" />
     </v-container>
     <div
       v-else
@@ -43,6 +44,10 @@ export default {
     tickets: {
       type: Array,
       default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -56,6 +61,6 @@ export default {
         ['CLOSED', {color: 'black--text', icon: 'fas fa-circle'}]
       ])
     };
-  }
+  },
 };
 </script>

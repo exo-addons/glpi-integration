@@ -18,7 +18,8 @@
 
 <template>
   <v-row
-    class="clickable text-color">
+    class="clickable text-color"
+    @click="openListTicketDrawer">
     <v-col class="px-0 py-2">
       <v-row
         no-gutters>
@@ -64,6 +65,15 @@ export default {
       type: Boolean,
       default: false
     },
+    index: {
+      type: Number,
+      default: -1
+    }
   },
+  methods: {
+    openListTicketDrawer() {
+      this.$root.$emit('open-list-ticket-drawer', this.index);
+    }
+  }
 };
 </script>

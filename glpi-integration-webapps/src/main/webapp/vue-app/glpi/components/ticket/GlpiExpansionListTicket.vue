@@ -17,7 +17,9 @@
 -->
 
 <template>
-  <v-expansion-panels accordion>
+  <v-expansion-panels
+    v-model="panel"
+    accordion>
     <glpi-expansion-ticket-list-item
       v-for="ticket in tickets"
       :key="ticket.id"
@@ -41,6 +43,7 @@ export default {
   },
   data() {
     return {
+      panel: null,
       statusIcons: new Map([
         ['NEW', {color: 'green--text', icon: 'fas fa-circle'}],
         ['PROCESSING_ASSIGNED',  {color: 'green--text', icon: 'far fa-circle'}],
@@ -50,6 +53,14 @@ export default {
         ['CLOSED', {color: 'black--text', icon: 'fas fa-circle'}]
       ])
     };
+  },
+  created() {
+    this.$root.$on('set-panel-expanded', this.setPanelExpanded);
+  },
+  methods: {
+    setPanelExpanded(index) {
+      this.panel = index;
+    }
   }
 };
 </script>>

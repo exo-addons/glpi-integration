@@ -131,8 +131,14 @@ export default {
     loadMoreTickets() {
       this.$emit('load-more-tickets');
     },
-    openDrawer() {
+    openDrawer(index) {
       this.$refs.glpiListTicketDrawer.open();
+      if (index < 0) {
+        return;
+      }
+      setTimeout(() => {
+        this.$root.$emit('set-panel-expanded', index);
+      }, 200);
     },
     closeDrawer() {
       this.$refs.glpiListTicketDrawer.close();
