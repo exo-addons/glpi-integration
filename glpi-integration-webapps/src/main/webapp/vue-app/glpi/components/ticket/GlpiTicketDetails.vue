@@ -77,7 +77,7 @@
           <v-chip
             v-for="user in ticket.assignees"
             :key="user.id"
-            class="text-capitalize mt-n1"
+            class="text-capitalize ma-auto"
             small
             outlined
             pill>
