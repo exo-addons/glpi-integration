@@ -21,7 +21,7 @@
     <div class="mt-n1">
       <div>
         <v-icon
-          class="d-block icon-default-color ms-n6 me-1 red--text">
+          class="d-block icon-default-color ms-n6 me-1 tertiary-color">
           fas fa-calendar-alt
         </v-icon>
         <date-format
@@ -36,7 +36,7 @@
     <div class="mt-2">
       <div>
         <v-icon
-          class="d-block icon-default-color ms-n6 me-1 mt-auto red--text">
+          class="d-block icon-default-color ms-n6 me-1 mt-auto tertiary-color">
           fas fa-file-alt
         </v-icon>
         <div class="mt-n2 font-weight-bold text-color">
@@ -52,7 +52,7 @@
       class="mt-2">
       <div>
         <v-icon
-          class="d-block icon-default-color ms-n6 me-1 mt-auto red--text">
+          class="d-block icon-default-color ms-n6 me-1 mt-auto tertiary-color">
           fas fa-comment-dots
         </v-icon>
         <div class="mt-n2 ms-1 font-weight-bold text-color">
@@ -69,7 +69,7 @@
       <div>
         <v-icon
           size="23"
-          class="d-block icon-default-color ms-n7 me-1 mt-auto red--text">
+          class="d-block icon-default-color ms-n7 me-1 mt-auto tertiary-color">
           fas fa-user-cog
         </v-icon>
         <div class="mt-n2 ms-1 text-color">

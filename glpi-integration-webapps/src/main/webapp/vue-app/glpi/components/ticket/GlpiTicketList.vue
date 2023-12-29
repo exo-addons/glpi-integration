@@ -55,7 +55,7 @@ export default {
       statusIcons: new Map([
         ['NEW', {color: 'green--text', icon: 'fas fa-circle'}],
         ['PROCESSING_ASSIGNED',  {color: 'green--text', icon: 'far fa-circle'}],
-        ['PROCESSING_PLANNED', {color: 'primary--text', icon: 'fas fa-calendar-alt'}],
+        ['PROCESSING_PLANNED', {color: 'black--text', icon: 'far fa-calendar'}],
         ['PENDING', {color: 'orange--text', icon: 'fas fa-circle'}],
         ['SOLVED', {color: 'black--text', icon: 'far fa-circle'}],
         ['CLOSED', {color: 'black--text', icon: 'fas fa-circle'}]
