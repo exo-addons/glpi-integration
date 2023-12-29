@@ -21,13 +21,13 @@
     <div class="mt-n1">
       <div>
         <v-icon
-          class="d-block icon-default-color ms-n6 me-1 red--text">
+          class="d-block ms-n6 me-1 tertiary-color">
           fas fa-calendar-alt
         </v-icon>
         <date-format
           :value="lastUpdatedTime"
           :format="dateFormat"
-          class="ms-1 mt-n2 font-weight-bold" />
+          class="ms-1 mt-n5 font-weight-bold" />
       </div>
       <div class="ms-1 ">
         {{ ticket.title }}
@@ -36,10 +36,10 @@
     <div class="mt-2">
       <div>
         <v-icon
-          class="d-block icon-default-color ms-n6 me-1 mt-auto red--text">
+          class="d-block ms-n6 me-1 mt-auto tertiary-color">
           fas fa-file-alt
         </v-icon>
-        <div class="mt-n2 font-weight-bold text-color">
+        <div class="mt-n5 font-weight-bold text-color">
           {{ $t('glpi.ticket.description.label') }}
         </div>
       </div>
@@ -52,10 +52,10 @@
       class="mt-2">
       <div>
         <v-icon
-          class="d-block icon-default-color ms-n6 me-1 mt-auto red--text">
+          class="d-block ms-n6 me-1 mt-auto tertiary-color">
           fas fa-comment-dots
         </v-icon>
-        <div class="mt-n2 ms-1 font-weight-bold text-color">
+        <div class="mt-n5 ms-1 font-weight-bold text-color">
           {{ $t('glpi.ticket.lastComment.label') }}
         </div>
       </div>
@@ -69,10 +69,10 @@
       <div>
         <v-icon
           size="23"
-          class="d-block icon-default-color ms-n7 me-1 mt-auto red--text">
+          class="d-block ms-n7 me-1 mt-auto tertiary-color">
           fas fa-user-cog
         </v-icon>
-        <div class="mt-n2 ms-1 text-color">
+        <div class="mt-n5 ms-1 text-color">
           {{ $t('glpi.ticket.assignee.message') }}
           <v-chip
             v-for="user in ticket.assignees"
