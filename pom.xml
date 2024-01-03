@@ -42,7 +42,7 @@
         <tag>HEAD</tag>
     </scm>
     <properties>
-        <org.exoplatform.social.version>6.5.x-exo-SNAPSHOT</org.exoplatform.social.version>
+        <org.exoplatform.social.version>6.5.0-exo-RC04</org.exoplatform.social.version>
     </properties>
     <dependencyManagement>
         <dependencies>
