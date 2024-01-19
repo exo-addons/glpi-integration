@@ -72,9 +72,11 @@
       </div>
     </template>
     <template slot="content">
-      <glpi-expansion-list-ticket
-        :tickets="tickets"
-        :server-url="serverUrl" />
+      <div class="overflow-x-hidden">
+        <glpi-expansion-list-ticket
+          :tickets="tickets"
+          :server-url="serverUrl" />
+      </div>
     </template>
     <template
       v-if="hasMore"

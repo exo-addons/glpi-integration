@@ -29,6 +29,7 @@ import GlpiListTicketDrawer from './components/ticket/GlpiListTicketDrawer.vue';
 import GlpiExpansionListTicket from './components/ticket/GlpiExpansionListTicket.vue';
 import GlpiExpansionTicketListItem from './components/ticket/GlpiExpansionTicketListItem.vue';
 import GlpiTicketDetails from './components/ticket/GlpiTicketDetails.vue';
+import GlpiSettingsButton from './components/view/GlpiSettingsButton.vue';
 
 import * as glpiService from './js/GLPIService';
 
@@ -45,7 +46,8 @@ const components = {
   'glpi-list-ticket-darwer': GlpiListTicketDrawer,
   'glpi-expansion-list-ticket': GlpiExpansionListTicket,
   'glpi-expansion-ticket-list-item': GlpiExpansionTicketListItem,
-  'glpi-ticket-details': GlpiTicketDetails
+  'glpi-ticket-details': GlpiTicketDetails,
+  'glpi-settings-button': GlpiSettingsButton
 };
 
 for (const key in components) {
