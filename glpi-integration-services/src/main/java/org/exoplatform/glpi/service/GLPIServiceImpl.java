@@ -209,12 +209,15 @@ public class GLPIServiceImpl implements GLPIService {
     if (httpGet == null) {
       return null;
     }
+    List<GlpiTicket> tickets = new ArrayList<>();
     try {
-      List<GlpiTicket> tickets = new ArrayList<>();
       HttpResponse httpResponse = httpClient.execute(httpGet);
       String responseString = new BasicResponseHandler().handleResponse(httpResponse);
       EntityUtils.consume(httpResponse.getEntity());
       JSONObject jsonResponse = new JSONObject(responseString);
+      if (!jsonResponse.has("data")) {
+        return tickets;
+      }
       JSONArray jsonArray = jsonResponse.getJSONArray("data");
       jsonArray.forEach(object -> {
         GlpiTicket ticket = new GlpiTicket();
@@ -250,7 +253,7 @@ public class GLPIServiceImpl implements GLPIService {
     } finally {
       killSession(sessionToken);
     }
-    return null;
+    return tickets;
   }
 
   private List<Object> parseComments(Object comments) {
