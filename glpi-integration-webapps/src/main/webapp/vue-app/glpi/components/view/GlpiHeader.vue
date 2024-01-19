@@ -36,7 +36,7 @@
       </v-btn>
     </div>
     <div
-      v-if="canEditAdminConfig && isAdmin"
+      v-if="canEditAdminConfig"
       role="button"
       tabIndex="0"
       class="ms-auto d-flex"
@@ -52,16 +52,14 @@
           fas fa-external-link-alt
         </v-icon>
       </v-btn>
-      <v-btn
-        class="ms-auto my-0 pt-1 icon-default-color"
-        small
-        icon
-        @click="openSettingsDrawer">
-        <v-icon
-          size="20">
-          fas fa-cog
-        </v-icon>
-      </v-btn>
+      <glpi-settings-button
+        @open-settings-drawer="openSettingsDrawer" />
+    </div>
+    <div
+      v-if="isAdmin && !isConnected"
+      class="ms-auto d-flex">
+      <glpi-settings-button
+        @open-settings-drawer="openSettingsDrawer" />
     </div>
   </div>
 </template>
