@@ -77,7 +77,7 @@ export default {
       hasValidUserToken: false,
       glpiSettings: null,
       tickets: [],
-      pageSize: 8,
+      pageSize: 10,
       limit: 0,
       offset: 0,
       loading: false,
@@ -135,8 +135,8 @@ export default {
       this.loading = !loadMore;
       this.isLoadingMore = loadMore;
       return this.$glpiService.getGLPITickets(offset, limit + 1).then(tickets => {
-        this.tickets.push(...tickets);
-        this.hasMore = tickets?.length > this.limit - this.offset;
+        this.tickets.push(...tickets.slice(0, limit));
+        this.hasMore = tickets?.length > limit - offset;
       }).finally(() => {
         this.loading = false;
         this.isLoadingMore = false;
