@@ -132,7 +132,7 @@ export default {
       return this.ticket && this.decodeHtml(this.ticket?.content);
     },
     ticketLastComment() {
-      return this.ticket && this.decodeHtml(this.ticket?.comments[this.ticket?.comments?.length - 1]);
+      return this.ticket && this.decodeHtml(this.ticket?.comments[0]);
     },
     lastUpdatedTime() {
       return this.ticket && new Date(this.ticket?.lastUpdated).getTime();
@@ -149,7 +149,9 @@ export default {
     updateImagesURl(img) {
       const imgURl = img.getAttribute('src');
       const docId = new URLSearchParams(imgURl.substring(imgURl.indexOf('?') + 1)).get('docid');
-      img.setAttribute('src', `${this.imgBaseUrl}${docId}?v=${this.lastUpdatedTime}`);
+      if (docId) {
+        img.setAttribute('src', `${this.imgBaseUrl}${docId}?v=${this.lastUpdatedTime}`);
+      }
     },
     decodeHtml(html) {
       const element = document.createElement('textarea');

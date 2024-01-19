@@ -48,7 +48,7 @@
               :rules="[rules.required]"
               name="userToken"
               class="mt-n3 mb-2"
-              :placeholder="$t('glpi.settings.server.api.url.placeholder')"
+              :placeholder="$t('glpi.connection.user.token.placeholder')"
               dense
               outlined />
           </v-form>
