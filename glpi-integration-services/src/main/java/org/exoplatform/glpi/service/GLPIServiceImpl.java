@@ -278,11 +278,17 @@ public class GLPIServiceImpl implements GLPIService {
   private List<GlpiUser> getGLPIUsersInfo(Object assignees, String sessionToken) {
     List<GlpiUser> GLPIUsers = new ArrayList<>();
     if (assignees instanceof String) {
-      GLPIUsers.add(getGLPIUserInfo(Long.parseLong((String) assignees), sessionToken));
+      GlpiUser glpiUser = getGLPIUserInfo(Long.parseLong((String) assignees), sessionToken);
+      if (glpiUser != null) {
+        GLPIUsers.add(glpiUser);
+      }
     } else {
       ((JSONArray) assignees).forEach(object -> {
         String glpiUserId = (String) object;
-        GLPIUsers.add(getGLPIUserInfo(Long.parseLong(glpiUserId), sessionToken));
+        GlpiUser glpiUser = getGLPIUserInfo(Long.parseLong(glpiUserId), sessionToken);
+        if (glpiUser != null) {
+          GLPIUsers.add(glpiUser);
+        }
       });
     }
     return GLPIUsers;
