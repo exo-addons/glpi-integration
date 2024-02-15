@@ -9,6 +9,15 @@ cd ${EXO_HOME}
 ./addon install exo-glpi-integration
 ```
 
+To allow eXo to communicate with GPLI server, you need to add the GLPI Server ssh certificate in the java truststore of eXo Server :
+
+- Get the Glpi server certificate : `glpi.cer`
+- On eXo Server, type this command (adapt the path of the java keystore)
+
+```
+keytool -import -alias glpi -keystore $JAVA_HOME/jre/lib/security/cacerts -file glpi.cer
+``` 
+
 Then start the server
 
 ## Configure the GLPI Gadget 
